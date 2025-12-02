@@ -1,5 +1,3 @@
-version: "3.9"
-
 # this creates the following services as examples:
 
 ## NATS server
@@ -16,8 +14,7 @@ services:
       - "4222:4222"
 
   camera_cam01:
-    build: ./iot/camera
-    container_name: camera_cam01
+    build: ./camera
     environment:
       CAMERA_ID: "cam01"
       CAMERA_AREA: "areaA"
@@ -27,8 +24,7 @@ services:
       - nats
 
   camera_cam02:
-    build: ./iot/camera
-    container_name: camera_cam02
+    build: ./camera
     environment:
       CAMERA_ID: "cam02"
       CAMERA_AREA: "areaB"
@@ -37,17 +33,15 @@ services:
     depends_on:
       - nats
 
-  alarm_areaA:
-    build: ./iot/alarm
-    container_name: alarm_areaA
+  alarm_areaa:
+    build: ./alarm
     environment:
       ALARM_AREA: "areaA"
     depends_on:
       - nats
 
-  alarm_areaB:
-    build: ./iot/alarm
-    container_name: alarm_areaB
+  alarm_areab:
+    build: ./alarm
     environment:
       ALARM_AREA: "areaB"
     depends_on:
