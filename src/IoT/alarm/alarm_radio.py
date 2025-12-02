@@ -1,21 +1,25 @@
 import asyncio
 import nats
+import os
 
 async def alarm_radio(area: str):
-    nc = await nats.connect("nats://localhost:4222")
+    nc = await nats.connect("nats://nats:4222")
 
     subject = f"alerts.{area}"
-    print(f"Alarm device listening to: {subject}")
+    print(f"Alarm radio listening on {subject}")
 
     async def msg_handler(msg):
         text = msg.data.decode()
         print(f"\n🚨 ALERT for {area} 🚨")
         print("Message:", text)
-        print("-------------------------")
+        print("--------------------")
 
     await nc.subscribe(subject, cb=msg_handler)
 
     while True:
         await asyncio.sleep(1)
 
-asyncio.run(alarm_radio("areaA"))
+
+if __name__ == "__main__":
+    area = os.environ.get("ALARM_AREA", "areaA")
+    asyncio.run(alarm_radio(area))

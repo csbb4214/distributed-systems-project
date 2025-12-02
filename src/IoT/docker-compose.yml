@@ -1,0 +1,55 @@
+version: "3.9"
+
+# this creates the following services as examples:
+
+## NATS server
+## One camera sender (cam01)
+## One camera sender (cam02)
+##One alarm radio for areaA
+##One alarm radio for areaB
+
+services:
+  nats:
+    image: nats:latest
+    container_name: nats
+    ports:
+      - "4222:4222"
+    command: ["-js"]   # enables JetStream but optional
+
+  camera_cam01:
+    build: ./iot/camera
+    container_name: camera_cam01
+    environment:
+      CAMERA_ID: "cam01"
+      CAMERA_AREA: "areaA"
+      FRAMES_DIR: "/app/frames_cam01"
+      FPS: 1
+    depends_on:
+      - nats
+
+  camera_cam02:
+    build: ./iot/camera
+    container_name: camera_cam02
+    environment:
+      CAMERA_ID: "cam02"
+      CAMERA_AREA: "areaB"
+      FRAMES_DIR: "/app/frames_cam02"
+      FPS: 1
+    depends_on:
+      - nats
+
+  alarm_areaA:
+    build: ./iot/alarm
+    container_name: alarm_areaA
+    environment:
+      ALARM_AREA: "areaA"
+    depends_on:
+      - nats
+
+  alarm_areaB:
+    build: ./iot/alarm
+    container_name: alarm_areaB
+    environment:
+      ALARM_AREA: "areaB"
+    depends_on:
+      - nats

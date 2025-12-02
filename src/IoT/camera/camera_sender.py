@@ -1,10 +1,11 @@
 import asyncio
-import nats
 import os
 
+import nats
 
-async def camera_sender(camera_id: str, area: str, frames_dir: str, fps: int = 10):
-    nc = await nats.connect("nats://localhost:4222")
+
+async def camera_sender(camera_id: str, area: str, frames_dir: str, fps: int = 1):
+    nc = await nats.connect("nats://nats:4222")
     subject = f"camera.{camera_id}.frame"
 
     frame_delay = 1 / fps
@@ -21,17 +22,13 @@ async def camera_sender(camera_id: str, area: str, frames_dir: str, fps: int = 1
             with open(frame_path, "rb") as f:
                 data = f.read()
                 await nc.publish(subject, data)
-
             await asyncio.sleep(frame_delay)
 
 
-# Example:
-# asyncio.run(camera_sender("cam01", "areaA", "frames_cam01"))
-asyncio.run(
-    camera_sender(
-        camera_id="cam01",
-        area="areaA",
-        frames_dir="frames_cam01",
-        fps=10
-    )
-)
+if __name__ == "__main__":
+    camera_id = os.environ.get("CAMERA_ID", "cam01")
+    area = os.environ.get("CAMERA_AREA", "areaA")
+    frames_dir = os.environ.get("FRAMES_DIR", "frames")
+    fps = int(os.environ.get("FPS", "1"))
+
+    asyncio.run(camera_sender(camera_id, area, frames_dir, fps))
