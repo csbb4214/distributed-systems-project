@@ -5,7 +5,7 @@ services:
     environment:
       EDGE_REGION: "regionA"
       AREAS: "areaA1,areaA2"
-      NATS_URL: "nats://nats:4222"   # change to remote URL if needed
+      NATS_URL: "nats://host.docker.internal:4222"
     depends_on:
       - nats
     restart: unless-stopped
@@ -16,15 +16,7 @@ services:
     environment:
       EDGE_REGION: "regionB"
       AREAS: "areaB1,areaB2,areaB3"
-      NATS_URL: "nats://nats:4222"
+      NATS_URL: "nats://host.docker.internal:4222"
     depends_on:
       - nats
-    restart: unless-stopped
-
-  # Shared NATS server for Edge (can be removed if Edge connects to remote IoT NATS)
-  nats:
-    image: nats:latest
-    container_name: nats
-    ports:
-      - "4223:4222"  # Exposed on a different port than IoT if you want to avoid conflicts
     restart: unless-stopped

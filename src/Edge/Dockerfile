@@ -7,4 +7,4 @@ COPY edge_station.py .
 
 RUN pip install nats-py numpy
 
-CMD ["python", "edge_station.py"]
+CMD ["python", "-u", "edge_station.py"]

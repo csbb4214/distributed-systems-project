@@ -6,4 +6,4 @@ RUN pip install nats-py
 
 COPY alarm_radio.py .
 
-CMD ["python", "alarm_radio.py"]
+CMD ["python", "-u", "alarm_radio.py"]
