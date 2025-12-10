@@ -27,8 +27,8 @@ def generate_wind() -> Tuple[float, float]:
     return speed, direction
 
 
-async def weather_station(region: str, areas: list[str]):
-    nc = await nats.connect("nats://nats:4222")
+async def weather_station(nats_url: str, region: str, areas: list[str]):
+    nc = await nats.connect(nats_url)
 
     cloud_subject = f"region.{region}.processed"
 
@@ -87,6 +87,7 @@ async def weather_station(region: str, areas: list[str]):
 
 if __name__ == "__main__":
     region = os.environ.get("REGION", "regionA")
+    nats_url = os.environ.get("NATS_URL", "nats://nats:4222")
 
     # get areas associated with this region
     areas_env = os.environ.get("AREAS", "")
@@ -96,4 +97,4 @@ if __name__ == "__main__":
         print("ERROR: No areas defined in AREAS environment variable!")
         exit(1)
 
-    asyncio.run(weather_station(region, areas))
+    asyncio.run(weather_station(nats_url, region, areas))

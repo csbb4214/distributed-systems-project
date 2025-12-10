@@ -4,8 +4,8 @@ import os
 import nats
 
 
-async def camera_sender(area: str, frames_dir: str, fps: int = 1):
-    nc = await nats.connect("nats://nats:4222")
+async def camera_sender(nats_url: str, area: str, frames_dir: str, fps: int = 1):
+    nc = await nats.connect(nats_url)
     subject = f"area.{area}.frame"
 
     frame_delay = 1 / fps
@@ -29,5 +29,6 @@ if __name__ == "__main__":
     area = os.environ.get("AREA", "areaA")
     frames_dir = os.environ.get("FRAMES_DIR", "frames")
     fps = int(os.environ.get("FPS", "1"))
+    nats_url = os.environ.get("NATS_URL", "nats://nats:4222")
 
-    asyncio.run(camera_sender(area, frames_dir, fps))
+    asyncio.run(camera_sender(nats_url, area, frames_dir, fps))

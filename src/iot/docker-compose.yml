@@ -19,6 +19,7 @@ services:
       AREA: "areaA1"
       FRAMES_DIR: "/app/frames_cam01"
       FPS: 1
+      NATS_URL: "nats://nats:4222"
     depends_on:
       - nats
 
@@ -28,6 +29,7 @@ services:
       AREA: "areaB1"
       FRAMES_DIR: "/app/frames_cam02"
       FPS: 1
+      NATS_URL: "nats://nats:4222"
     depends_on:
       - nats
 
@@ -35,6 +37,7 @@ services:
     build: ./alarm
     environment:
       AREA: "areaA1"
+      NATS_URL: "nats://nats:4222"
     depends_on:
       - nats
 
@@ -42,5 +45,10 @@ services:
     build: ./alarm
     environment:
       AREA: "areaB1"
+      NATS_URL: "nats://nats:4222"
     depends_on:
       - nats
+
+networks:
+  default:
+    driver: bridge

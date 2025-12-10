@@ -2,8 +2,8 @@ import asyncio
 import nats
 import os
 
-async def alarm_radio(area: str):
-    nc = await nats.connect("nats://nats:4222")
+async def alarm_radio(nats_url: str, area: str):
+    nc = await nats.connect(nats_url)
 
     subject = f"alerts.{area}"
     print(f"Alarm radio listening on {subject}")
@@ -22,4 +22,6 @@ async def alarm_radio(area: str):
 
 if __name__ == "__main__":
     area = os.environ.get("AREA", "areaA")
-    asyncio.run(alarm_radio(area))
+    nats_url = os.environ.get("NATS_URL", "nats://nats:4222")
+
+    asyncio.run(alarm_radio(nats_url, area))

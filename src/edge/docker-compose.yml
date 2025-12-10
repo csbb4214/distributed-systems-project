@@ -5,7 +5,7 @@ services:
     environment:
       REGION: "regionA"
       AREAS: "areaA1,areaA2"
-      NATS_URL: "nats://host.docker.internal:4222"
+      NATS_URL: "nats://nats:4222"
     restart: unless-stopped
 
   weather_station_regionb:
@@ -14,5 +14,5 @@ services:
     environment:
       REGION: "regionB"
       AREAS: "areaB1,areaB2,areaB3"
-      NATS_URL: "nats://host.docker.internal:4222"
+      NATS_URL: "nats://nats:4222"
     restart: unless-stopped
