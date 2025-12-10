@@ -48,7 +48,3 @@ services:
       NATS_URL: "nats://nats:4222"
     depends_on:
       - nats
-
-networks:
-  default:
-    driver: bridge

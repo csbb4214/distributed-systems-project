@@ -10,7 +10,7 @@ async def alarm_radio(nats_url: str, area: str):
 
     async def msg_handler(msg):
         text = msg.data.decode()
-        print(f"\n🚨 ALERT for {area} 🚨")
+        print(f"\nALERT for {area}")
         print("Message:", text)
         print("--------------------")
 
