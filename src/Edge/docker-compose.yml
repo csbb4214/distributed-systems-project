@@ -1,21 +1,19 @@
 services:
-  edge_station_areaa:
+  edge_station_regiona:
     build: .
-    container_name: edge_station_areaA
+    container_name: edge_station_regionA
     environment:
-      STATION_ID: "stationA"
-      EDGE_AREA: "areaA"
+      EDGE_REGION: "regionA"
       NATS_URL: "nats://nats:4222"   # change to remote URL if needed
     depends_on:
       - nats
     restart: unless-stopped
 
-  edge_station_areab:
+  edge_station_regionb:
     build: .
-    container_name: edge_station_areaB
+    container_name: edge_station_regionB
     environment:
-      STATION_ID: "stationB"
-      EDGE_AREA: "areaB"
+      EDGE_REGION: "regionB"
       NATS_URL: "nats://nats:4222"
     depends_on:
       - nats

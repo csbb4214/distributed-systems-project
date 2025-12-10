@@ -49,17 +49,17 @@ def generate_wind() -> Tuple[float, float]:
 # ---------------------------------------------------------
 # Main Edge process
 # ---------------------------------------------------------
-async def weather_station(station_id: str, area: str):
+async def weather_station(region: str):
     nc = await nats.connect("nats://nats:4222")
 
-    camera_subject = f"camera.*.frame"
-    cloud_subject = f"weather.{station_id}.processed"
+    camera_subject = f"area.*.frame"
+    cloud_subject = f"region.{region}.processed"
 
-    print(f"[WEATHER {station_id}] Listening for camera frames on '{camera_subject}'")
-    print(f"[WEATHER {station_id}] Sending processed data to '{cloud_subject}'")
+    print(f"[Station in region {region}] Listening for camera frames on '{camera_subject}'")
+    print(f"[Station in region {region}] Sending processed data to '{cloud_subject}'")
 
     async def msg_handler(msg):
-        camera_id = msg.subject.split(".")[1]
+        area = msg.subject.split(".")[1]
         raw_bytes = msg.data
 
         # Decode image
@@ -77,10 +77,10 @@ async def weather_station(station_id: str, area: str):
 
         # If confidence is low, skip sending to cloud to reduce load
         if conf < 0.01:
-            print(f"[WEATHER {station_id}] Frame from {camera_id}: no fire detected (conf={conf:.4f})")
+            print(f"[Station in region {region}] Frame from {area}: no fire detected (conf={conf:.4f})")
             return
 
-        print(f"[WEATHER {station_id}] 🔥 Suspicious frame from {camera_id}! conf={conf:.3f}")
+        print(f"[Station in region {region}] 🔥 Suspicious frame from {area}! conf={conf:.3f}")
 
         # Encode frame to Base64 for safe NATS transport
         _, jpeg_data = cv2.imencode(".jpg", frame_small)
@@ -88,9 +88,8 @@ async def weather_station(station_id: str, area: str):
 
         # Create event package
         event = {
-            "station_id": station_id,
+            "region": region,
             "area": area,
-            "camera_id": camera_id,
             "timestamp": time.time(),
             "fire_confidence": conf,
             "wind_speed": wind_speed,
@@ -108,7 +107,6 @@ async def weather_station(station_id: str, area: str):
 
 
 if __name__ == "__main__":
-    station_id = os.environ.get("STATION_ID", "edge01")
-    area = os.environ.get("EDGE_AREA", "areaA")
+    region = os.environ.get("EDGE_REGION", "regionA")
 
-    asyncio.run(weather_station(station_id, area))
+    asyncio.run(weather_station(region))

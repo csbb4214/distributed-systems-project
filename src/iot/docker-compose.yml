@@ -16,7 +16,6 @@ services:
   camera_cam01:
     build: ./camera
     environment:
-      CAMERA_ID: "cam01"
       CAMERA_AREA: "areaA"
       FRAMES_DIR: "/app/frames_cam01"
       FPS: 1
@@ -26,7 +25,6 @@ services:
   camera_cam02:
     build: ./camera
     environment:
-      CAMERA_ID: "cam02"
       CAMERA_AREA: "areaB"
       FRAMES_DIR: "/app/frames_cam02"
       FPS: 1
