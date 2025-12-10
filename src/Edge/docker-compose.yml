@@ -4,6 +4,7 @@ services:
     container_name: edge_station_regionA
     environment:
       EDGE_REGION: "regionA"
+      AREAS: "areaA1,areaA2"
       NATS_URL: "nats://nats:4222"   # change to remote URL if needed
     depends_on:
       - nats
@@ -14,6 +15,7 @@ services:
     container_name: edge_station_regionB
     environment:
       EDGE_REGION: "regionB"
+      AREAS: "areaB1,areaB2,areaB3"
       NATS_URL: "nats://nats:4222"
     depends_on:
       - nats

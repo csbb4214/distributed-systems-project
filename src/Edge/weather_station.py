@@ -11,52 +11,29 @@ import numpy as np
 import nats
 
 
-# ---------------------------------------------------------
-# Simple lightweight fire detection using color heuristics
-# ---------------------------------------------------------
 def detect_fire(frame: np.ndarray) -> float:
-    """
-    Returns a fire confidence [0.0 – 1.0] using simple color thresholding.
-    """
-
-    # Convert to HSV (better for fire color range detection)
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-
-    lower = np.array([0, 120, 120])     # reddish/orange lower bound
-    upper = np.array([30, 255, 255])    # reddish/orange upper bound
-
+    lower = np.array([0, 120, 120])
+    upper = np.array([30, 255, 255])
     mask = cv2.inRange(hsv, lower, upper)
     fire_pixels = np.sum(mask > 0)
     total_pixels = frame.shape[0] * frame.shape[1]
-
-    confidence = fire_pixels / total_pixels
-
-    return float(confidence)
+    return float(fire_pixels / total_pixels)
 
 
-# ---------------------------------------------------------
-# Wind simulation
-# ---------------------------------------------------------
 def generate_wind() -> Tuple[float, float]:
-    """
-    Generates wind speed and direction randomly.
-    """
-    direction = random.uniform(0, 360)   # degrees
-    speed = random.uniform(0, 25)        # m/s
+    direction = random.uniform(0, 360)
+    speed = random.uniform(0, 25)
     return speed, direction
 
 
-# ---------------------------------------------------------
-# Main Edge process
-# ---------------------------------------------------------
-async def weather_station(region: str):
+async def weather_station(region: str, areas: list[str]):
     nc = await nats.connect("nats://nats:4222")
 
-    camera_subject = f"area.*.frame"
     cloud_subject = f"region.{region}.processed"
 
-    print(f"[Station in region {region}] Listening for camera frames on '{camera_subject}'")
-    print(f"[Station in region {region}] Sending processed data to '{cloud_subject}'")
+    print(f"[Station {region}] Subscribing to areas: {areas}")
+    print(f"[Station {region}] Publishing to '{cloud_subject}'")
 
     async def msg_handler(msg):
         area = msg.subject.split(".")[1]
@@ -66,27 +43,26 @@ async def weather_station(region: str):
         np_arr = np.frombuffer(raw_bytes, np.uint8)
         frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
-        # Resize to reduce CPU & bandwidth
+        # Resize to reduce compute
         frame_small = cv2.resize(frame, (320, 240))
 
-        # Lightweight fire detection
+        # Fire detection
         conf = detect_fire(frame_small)
 
-        # Wind data simulation
+        # Wind simulation
         wind_speed, wind_direction = generate_wind()
 
-        # If confidence is low, skip sending to cloud to reduce load
         if conf < 0.01:
-            print(f"[Station in region {region}] Frame from {area}: no fire detected (conf={conf:.4f})")
+            print(f"[Station {region}] Frame from {area}: no fire (conf={conf:.4f})")
             return
 
-        print(f"[Station in region {region}] 🔥 Suspicious frame from {area}! conf={conf:.3f}")
+        print(f"[Station {region}] Suspicious frame in {area}! conf={conf:.3f}")
 
-        # Encode frame to Base64 for safe NATS transport
+        # Prepare frame
         _, jpeg_data = cv2.imencode(".jpg", frame_small)
         jpeg_b64 = base64.b64encode(jpeg_data).decode()
 
-        # Create event package
+        # Package event
         event = {
             "region": region,
             "area": area,
@@ -94,14 +70,17 @@ async def weather_station(region: str):
             "fire_confidence": conf,
             "wind_speed": wind_speed,
             "wind_direction": wind_direction,
-            "frame_jpeg_b64": jpeg_b64
+            "frame_jpeg_b64": jpeg_b64,
         }
 
         await nc.publish(cloud_subject, json.dumps(event).encode())
 
-    await nc.subscribe(camera_subject, cb=msg_handler)
+    # Subscribe individually to each area subject part of this region
+    for area in areas:
+        subject = f"area.{area}.frame"
+        print(f"[Station {region}] Subscribing to {subject}")
+        await nc.subscribe(subject, cb=msg_handler)
 
-    # Run indefinitely
     while True:
         await asyncio.sleep(1)
 
@@ -109,4 +88,12 @@ async def weather_station(region: str):
 if __name__ == "__main__":
     region = os.environ.get("EDGE_REGION", "regionA")
 
-    asyncio.run(weather_station(region))
+    # get areas associated with this region
+    areas_env = os.environ.get("AREAS", "")
+    areas = [a.strip() for a in areas_env.split(",") if a.strip()]
+
+    if not areas:
+        print("ERROR: No areas defined in AREAS environment variable!")
+        exit(1)
+
+    asyncio.run(weather_station(region, areas))

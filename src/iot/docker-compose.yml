@@ -3,8 +3,9 @@
 ## NATS server
 ## One camera sender (cam01)
 ## One camera sender (cam02)
-##One alarm radio for areaA
-##One alarm radio for areaB
+## One alarm radio for areaA1 (in regionA -> EDGE CONNECTION)
+## One alarm radio for areaB1 (in regionB -> EDGE CONNECTION)
+##
 
 services:
   nats:
@@ -13,34 +14,34 @@ services:
     ports:
       - "4222:4222"
 
-  camera_cam01:
+  camera_areaa1:
     build: ./camera
     environment:
-      CAMERA_AREA: "areaA"
+      CAMERA_AREA: "areaA1"
       FRAMES_DIR: "/app/frames_cam01"
       FPS: 1
     depends_on:
       - nats
 
-  camera_cam02:
+  camera_areab1:
     build: ./camera
     environment:
-      CAMERA_AREA: "areaB"
+      CAMERA_AREA: "areaB1"
       FRAMES_DIR: "/app/frames_cam02"
       FPS: 1
     depends_on:
       - nats
 
-  alarm_areaa:
+  alarm_areaa1:
     build: ./alarm
     environment:
-      ALARM_AREA: "areaA"
+      ALARM_AREA: "areaA1"
     depends_on:
       - nats
 
-  alarm_areab:
+  alarm_areab1:
     build: ./alarm
     environment:
-      ALARM_AREA: "areaB"
+      ALARM_AREA: "areaB1"
     depends_on:
       - nats
