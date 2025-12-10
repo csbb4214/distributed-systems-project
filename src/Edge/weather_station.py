@@ -22,15 +22,37 @@ def detect_fire(frame: np.ndarray) -> float:
     # Convert to HSV (better for fire color range detection)
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-    lower = np.array([0, 120, 120])     # reddish/orange lower bound
-    upper = np.array([30, 255, 255])    # reddish/orange upper bound
+    # Simple fire-like color range (red/orange)
+    lower = np.array([0, 170, 150], dtype=np.uint8)
+    upper = np.array([10, 255, 255], dtype=np.uint8)
 
     mask = cv2.inRange(hsv, lower, upper)
     fire_pixels = np.sum(mask > 0)
     total_pixels = frame.shape[0] * frame.shape[1]
 
     confidence = fire_pixels / total_pixels
+    return float(confidence)
 
+# ---------------------------------------------------------
+# Simple lightweight smoke detection using color heuristics
+# ---------------------------------------------------------
+def detect_smoke(frame: np.ndarray) -> float:
+    """
+    Returns a fire confidence [0.0 – 1.0] using simple color thresholding.
+    """
+
+    # Convert to HSV (better for fire color range detection)
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+    # Simple smoke-like color range (lightgrey/darkgrey)
+    lower = np.array([0, 0, 150], dtype=np.uint8)
+    upper = np.array([180, 50, 255], dtype=np.uint8)
+
+    mask = cv2.inRange(hsv, lower, upper)
+    fire_pixels = np.sum(mask > 0)
+    total_pixels = frame.shape[0] * frame.shape[1]
+
+    confidence = fire_pixels / total_pixels
     return float(confidence)
 
 
@@ -70,13 +92,18 @@ async def weather_station(station_id: str, area: str):
         frame_small = cv2.resize(frame, (320, 240))
 
         # Lightweight fire detection
-        conf = detect_fire(frame_small)
+
+        conf_smoke = detect_smoke(frame_small)
+        conf_fire = 0.00
+        if conf_smoke < 0.014:
+            conf_fire = detect_fire(frame_small)
+        
 
         # Wind data simulation
         wind_speed, wind_direction = generate_wind()
 
         # If confidence is low, skip sending to cloud to reduce load
-        if conf < 0.01:
+        if conf_smoke < 0.014 and conf_fire == 0.00:
             print(f"[WEATHER {station_id}] Frame from {camera_id}: no fire detected (conf={conf:.4f})")
             return
 
