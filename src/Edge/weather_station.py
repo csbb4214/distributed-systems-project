@@ -82,16 +82,14 @@ async def weather_station(nats_url: str, region: str, areas: list[str]):
         if conf_smoke < 0.014:
             conf_fire = detect_fire(frame_small)
 
-        
-
         # Wind simulation
         wind_speed, wind_direction = generate_wind()
 
         if conf_smoke < 0.014 and conf_fire == 0.00:
-            print(f"[Station {region}] Frame from {area}: no fire (conf={conf:.4f})")
+            print(f"[Station {region}] Frame from {area}: no fire (conf={conf_fire:.4f})")
             return
 
-        print(f"[Station {region}] Suspicious frame in {area}! conf={conf:.3f}")
+        print(f"[Station {region}] Suspicious frame in {area}! conf={conf_fire:.3f}")
 
         # Prepare frame
         _, jpeg_data = cv2.imencode(".jpg", frame_small)
@@ -102,7 +100,6 @@ async def weather_station(nats_url: str, region: str, areas: list[str]):
             "region": region,
             "area": area,
             "timestamp": time.time(),
-            "fire_confidence": conf,
             "wind_speed": wind_speed,
             "wind_direction": wind_direction,
             "frame_jpeg_b64": jpeg_b64,
