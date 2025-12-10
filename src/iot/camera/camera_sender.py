@@ -26,7 +26,7 @@ async def camera_sender(area: str, frames_dir: str, fps: int = 1):
 
 
 if __name__ == "__main__":
-    area = os.environ.get("CAMERA_AREA", "areaA")
+    area = os.environ.get("AREA", "areaA")
     frames_dir = os.environ.get("FRAMES_DIR", "frames")
     fps = int(os.environ.get("FPS", "1"))
 

@@ -1,22 +1,18 @@
 services:
-  edge_station_regiona:
+  weather_station_regiona:
     build: .
-    container_name: edge_station_regionA
+    container_name: weather_station_regionA
     environment:
-      EDGE_REGION: "regionA"
+      REGION: "regionA"
       AREAS: "areaA1,areaA2"
       NATS_URL: "nats://host.docker.internal:4222"
-    depends_on:
-      - nats
     restart: unless-stopped
 
-  edge_station_regionb:
+  weather_station_regionb:
     build: .
-    container_name: edge_station_regionB
+    container_name: weather_station_regionB
     environment:
-      EDGE_REGION: "regionB"
+      REGION: "regionB"
       AREAS: "areaB1,areaB2,areaB3"
       NATS_URL: "nats://host.docker.internal:4222"
-    depends_on:
-      - nats
     restart: unless-stopped

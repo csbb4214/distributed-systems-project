@@ -86,7 +86,7 @@ async def weather_station(region: str, areas: list[str]):
 
 
 if __name__ == "__main__":
-    region = os.environ.get("EDGE_REGION", "regionA")
+    region = os.environ.get("REGION", "regionA")
 
     # get areas associated with this region
     areas_env = os.environ.get("AREAS", "")

@@ -16,7 +16,7 @@ services:
   camera_areaa1:
     build: ./camera
     environment:
-      CAMERA_AREA: "areaA1"
+      AREA: "areaA1"
       FRAMES_DIR: "/app/frames_cam01"
       FPS: 1
     depends_on:
@@ -25,7 +25,7 @@ services:
   camera_areab1:
     build: ./camera
     environment:
-      CAMERA_AREA: "areaB1"
+      AREA: "areaB1"
       FRAMES_DIR: "/app/frames_cam02"
       FPS: 1
     depends_on:
@@ -34,13 +34,13 @@ services:
   alarm_areaa1:
     build: ./alarm
     environment:
-      ALARM_AREA: "areaA1"
+      AREA: "areaA1"
     depends_on:
       - nats
 
   alarm_areab1:
     build: ./alarm
     environment:
-      ALARM_AREA: "areaB1"
+      AREA: "areaB1"
     depends_on:
       - nats

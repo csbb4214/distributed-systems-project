@@ -21,5 +21,5 @@ async def alarm_radio(area: str):
 
 
 if __name__ == "__main__":
-    area = os.environ.get("ALARM_AREA", "areaA")
+    area = os.environ.get("AREA", "areaA")
     asyncio.run(alarm_radio(area))
