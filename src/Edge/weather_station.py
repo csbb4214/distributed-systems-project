@@ -12,43 +12,13 @@ import nats
 
 
 def detect_fire(frame: np.ndarray) -> float:
-    """
-    Returns a fire confidence [0.0 – 1.0] using simple color thresholding.
-    """
-
-    # Convert to HSV (better for fire color range detection)
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-
-    # Simple fire-like color range (red/orange)
-    lower = np.array([0, 170, 150], dtype=np.uint8)
-    upper = np.array([10, 255, 255], dtype=np.uint8)
-
+    lower = np.array([0, 120, 120])
+    upper = np.array([30, 255, 255])
     mask = cv2.inRange(hsv, lower, upper)
     fire_pixels = np.sum(mask > 0)
     total_pixels = frame.shape[0] * frame.shape[1]
-
-    confidence = fire_pixels / total_pixels
-    return float(confidence)
-
-
-def detect_smoke(frame: np.ndarray) -> float:
-    """
-    Returns a fire confidence [0.0 – 1.0] using simple color thresholding.
-    """
-
-    # Convert to HSV (better for fire color range detection)
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-
-    # Simple smoke-like color range (lightgrey/darkgrey)
-    lower = np.array([0, 0, 150], dtype=np.uint8)
-    upper = np.array([180, 50, 255], dtype=np.uint8)
-
-    mask = cv2.inRange(hsv, lower, upper)
-    fire_pixels = np.sum(mask > 0)
-    total_pixels = frame.shape[0] * frame.shape[1]
-
-    confidence = fire_pixels / total_pixels
-    return float(confidence)
+    return float(fire_pixels / total_pixels)
 
 
 def generate_wind() -> Tuple[float, float]:
