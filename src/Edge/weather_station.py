@@ -11,92 +11,130 @@ import numpy as np
 import nats
 
 
+# ---------------------------------------------------------
+# Simple lightweight fire detection using color heuristics
+# ---------------------------------------------------------
 def detect_fire(frame: np.ndarray) -> float:
+    """
+    Returns a fire confidence [0.0 – 1.0] using simple color thresholding.
+    """
+
+    # Convert to HSV (better for fire color range detection)
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    lower = np.array([0, 120, 120])
-    upper = np.array([30, 255, 255])
+
+    # Simple fire-like color range (red/orange)
+    lower = np.array([0, 170, 150], dtype=np.uint8)
+    upper = np.array([10, 255, 255], dtype=np.uint8)
+
     mask = cv2.inRange(hsv, lower, upper)
     fire_pixels = np.sum(mask > 0)
     total_pixels = frame.shape[0] * frame.shape[1]
-    return float(fire_pixels / total_pixels)
+
+    confidence = fire_pixels / total_pixels
+    return float(confidence)
+
+# ---------------------------------------------------------
+# Simple lightweight smoke detection using color heuristics
+# ---------------------------------------------------------
+def detect_smoke(frame: np.ndarray) -> float:
+    """
+    Returns a fire confidence [0.0 – 1.0] using simple color thresholding.
+    """
+
+    # Convert to HSV (better for fire color range detection)
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+    # Simple smoke-like color range (lightgrey/darkgrey)
+    lower = np.array([0, 0, 150], dtype=np.uint8)
+    upper = np.array([180, 50, 255], dtype=np.uint8)
+
+    mask = cv2.inRange(hsv, lower, upper)
+    fire_pixels = np.sum(mask > 0)
+    total_pixels = frame.shape[0] * frame.shape[1]
+
+    confidence = fire_pixels / total_pixels
+    return float(confidence)
 
 
+# ---------------------------------------------------------
+# Wind simulation
+# ---------------------------------------------------------
 def generate_wind() -> Tuple[float, float]:
-    direction = random.uniform(0, 360)
-    speed = random.uniform(0, 25)
+    """
+    Generates wind speed and direction randomly.
+    """
+    direction = random.uniform(0, 360)   # degrees
+    speed = random.uniform(0, 25)        # m/s
     return speed, direction
 
 
-async def weather_station(nats_url: str, region: str, areas: list[str]):
-    nc = await nats.connect(nats_url)
+# ---------------------------------------------------------
+# Main Edge process
+# ---------------------------------------------------------
+async def weather_station(station_id: str, area: str):
+    nc = await nats.connect("nats://nats:4222")
 
-    cloud_subject = f"region.{region}.processed"
+    camera_subject = f"camera.*.frame"
+    cloud_subject = f"weather.{station_id}.processed"
 
-    print(f"[Station {region}] Subscribing to areas: {areas}")
-    print(f"[Station {region}] Publishing to '{cloud_subject}'")
+    print(f"[WEATHER {station_id}] Listening for camera frames on '{camera_subject}'")
+    print(f"[WEATHER {station_id}] Sending processed data to '{cloud_subject}'")
 
     async def msg_handler(msg):
-        area = msg.subject.split(".")[1]
+        camera_id = msg.subject.split(".")[1]
         raw_bytes = msg.data
 
         # Decode image
         np_arr = np.frombuffer(raw_bytes, np.uint8)
         frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
-        # Resize to reduce compute
+        # Resize to reduce CPU & bandwidth
         frame_small = cv2.resize(frame, (320, 240))
 
-        # Fire detection
+        # Lightweight fire detection
+
         conf_smoke = detect_smoke(frame_small)
         conf_fire = 0.00
         if conf_smoke < 0.014:
             conf_fire = detect_fire(frame_small)
+        
 
-        # Wind simulation
+        # Wind data simulation
         wind_speed, wind_direction = generate_wind()
 
+        # If confidence is low, skip sending to cloud to reduce load
         if conf_smoke < 0.014 and conf_fire == 0.00:
-            print(f"[Station {region}] Frame from {area}: no fire (conf={conf_fire:.4f})")
+            print(f"[WEATHER {station_id}] Frame from {camera_id}: no fire detected (conf={conf:.4f})")
             return
 
-        print(f"[Station {region}] Suspicious frame in {area}! conf={conf_fire:.3f}")
+        print(f"[WEATHER {station_id}] 🔥 Suspicious frame from {camera_id}! conf={conf:.3f}")
 
-        # Prepare frame
+        # Encode frame to Base64 for safe NATS transport
         _, jpeg_data = cv2.imencode(".jpg", frame_small)
         jpeg_b64 = base64.b64encode(jpeg_data).decode()
 
-        # Package event
+        # Create event package
         event = {
-            "region": region,
+            "station_id": station_id,
             "area": area,
+            "camera_id": camera_id,
             "timestamp": time.time(),
             "wind_speed": wind_speed,
             "wind_direction": wind_direction,
-            "frame_jpeg_b64": jpeg_b64,
+            "frame_jpeg_b64": jpeg_b64
         }
 
         await nc.publish(cloud_subject, json.dumps(event).encode())
 
-    # Subscribe individually to each area subject part of this region
-    for area in areas:
-        subject = f"area.{area}.frame"
-        print(f"[Station {region}] Subscribing to {subject}")
-        await nc.subscribe(subject, cb=msg_handler)
+    await nc.subscribe(camera_subject, cb=msg_handler)
 
+    # Run indefinitely
     while True:
         await asyncio.sleep(1)
 
 
 if __name__ == "__main__":
-    region = os.environ.get("REGION", "regionA")
-    nats_url = os.environ.get("NATS_URL", "nats://nats:4222")
+    station_id = os.environ.get("STATION_ID", "edge01")
+    area = os.environ.get("EDGE_AREA", "areaA")
 
-    # get areas associated with this region
-    areas_env = os.environ.get("AREAS", "")
-    areas = [a.strip() for a in areas_env.split(",") if a.strip()]
-
-    if not areas:
-        print("ERROR: No areas defined in AREAS environment variable!")
-        exit(1)
-
-    asyncio.run(weather_station(nats_url, region, areas))
+    asyncio.run(weather_station(station_id, area))
