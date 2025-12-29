@@ -69,7 +69,7 @@ def generate_wind() -> Tuple[float, float]:
 
 
 # ---------------------------------------------------------
-# Main Edge process
+# Main edge process
 # ---------------------------------------------------------
 async def weather_station(station_id: str, area: str):
     nc = await nats.connect("nats://nats:4222")
@@ -92,7 +92,6 @@ async def weather_station(station_id: str, area: str):
         frame_small = cv2.resize(frame, (320, 240))
 
         # Lightweight fire detection
-
         conf_smoke = detect_smoke(frame_small)
         conf_fire = 0.00
         if conf_smoke < 0.014:
@@ -107,7 +106,7 @@ async def weather_station(station_id: str, area: str):
             print(f"[WEATHER {station_id}] Frame from {camera_id}: no fire detected (conf={conf:.4f})")
             return
 
-        print(f"[WEATHER {station_id}] 🔥 Suspicious frame from {camera_id}! conf={conf:.3f}")
+        print(f"[WEATHER {station_id}] Suspicious frame from {camera_id}! conf={conf:.3f}")
 
         # Encode frame to Base64 for safe NATS transport
         _, jpeg_data = cv2.imencode(".jpg", frame_small)

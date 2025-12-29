@@ -4,9 +4,9 @@ import os
 import nats
 
 
-async def camera_sender(camera_id: str, area: str, frames_dir: str, fps: int = 1):
-    nc = await nats.connect("nats://nats:4222")
-    subject = f"camera.{camera_id}.frame"
+async def camera_sender(nats_url: str, area: str, frames_dir: str, fps: int = 1):
+    nc = await nats.connect(nats_url)
+    subject = f"area.{area}.frame"
 
     frame_delay = 1 / fps
     frames = sorted([
@@ -15,7 +15,7 @@ async def camera_sender(camera_id: str, area: str, frames_dir: str, fps: int = 1
         if f.lower().endswith((".jpg", ".jpeg", ".png"))
     ])
 
-    print(f"Camera {camera_id} streaming {len(frames)} frames to {subject}")
+    print(f"Camera from area {area} streaming {len(frames)} frames to {subject}")
 
     while True:
         for frame_path in frames:
@@ -26,9 +26,9 @@ async def camera_sender(camera_id: str, area: str, frames_dir: str, fps: int = 1
 
 
 if __name__ == "__main__":
-    camera_id = os.environ.get("CAMERA_ID", "cam01")
-    area = os.environ.get("CAMERA_AREA", "areaA")
+    area = os.environ.get("AREA", "areaA")
     frames_dir = os.environ.get("FRAMES_DIR", "frames")
     fps = int(os.environ.get("FPS", "1"))
+    nats_url = os.environ.get("NATS_URL", "nats://nats:4222")
 
-    asyncio.run(camera_sender(camera_id, area, frames_dir, fps))
+    asyncio.run(camera_sender(nats_url, area, frames_dir, fps))

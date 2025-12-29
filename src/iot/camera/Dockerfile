@@ -12,4 +12,4 @@ COPY camera_sender.py .
 COPY frames_cam01 ./frames_cam01
 COPY frames_cam02 ./frames_cam02
 
-CMD ["python", "camera_sender.py"]
+CMD ["python", "-u", "camera_sender.py"]
