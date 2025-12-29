@@ -71,17 +71,16 @@ def generate_wind() -> Tuple[float, float]:
 # ---------------------------------------------------------
 # Main edge process
 # ---------------------------------------------------------
-async def weather_station(station_id: str, area: str):
+async def weather_station(region: str, areas: list[str]):
     nc = await nats.connect("nats://nats:4222")
 
-    camera_subject = f"camera.*.frame"
-    cloud_subject = f"weather.{station_id}.processed"
+    cloud_subject = f"region.{region}.processed"
 
-    print(f"[WEATHER {station_id}] Listening for camera frames on '{camera_subject}'")
-    print(f"[WEATHER {station_id}] Sending processed data to '{cloud_subject}'")
+    print(f"[Station {region}] Subscribing to areas: {areas}")
+    print(f"[Station {region}] Publishing to '{cloud_subject}'")
 
     async def msg_handler(msg):
-        camera_id = msg.subject.split(".")[1]
+        area = msg.subject.split(".")[1]
         raw_bytes = msg.data
 
         # Decode image
@@ -96,17 +95,16 @@ async def weather_station(station_id: str, area: str):
         conf_fire = 0.00
         if conf_smoke < 0.014:
             conf_fire = detect_fire(frame_small)
-        
 
-        # Wind data simulation
+        # Wind simulation
         wind_speed, wind_direction = generate_wind()
 
         # If confidence is low, skip sending to cloud to reduce load
         if conf_smoke < 0.014 and conf_fire == 0.00:
-            print(f"[WEATHER {station_id}] Frame from {camera_id}: no fire detected (conf={conf:.4f})")
+            print(f"[Station {region}] Frame from {area}: no fire detected (conf={conf_fire:.4f})")
             return
 
-        print(f"[WEATHER {station_id}] Suspicious frame from {camera_id}! conf={conf:.3f}")
+        print(f"[Station {region}] Suspicious frame from {area}! conf={conf_fire:.3f}")
 
         # Encode frame to Base64 for safe NATS transport
         _, jpeg_data = cv2.imencode(".jpg", frame_small)
@@ -114,10 +112,10 @@ async def weather_station(station_id: str, area: str):
 
         # Create event package
         event = {
-            "station_id": station_id,
+            "region": region,
             "area": area,
-            "camera_id": camera_id,
             "timestamp": time.time(),
+            "conf_fire": conf_fire,
             "wind_speed": wind_speed,
             "wind_direction": wind_direction,
             "frame_jpeg_b64": jpeg_b64
@@ -125,7 +123,11 @@ async def weather_station(station_id: str, area: str):
 
         await nc.publish(cloud_subject, json.dumps(event).encode())
 
-    await nc.subscribe(camera_subject, cb=msg_handler)
+    # Subscribe individually to each area subject part of this region
+    for area in areas:
+        subject = f"area.{area}.frame"
+        print(f"[Station {region}] Subscribing to {subject}")
+        await nc.subscribe(subject, cb=msg_handler)
 
     # Run indefinitely
     while True:
@@ -133,7 +135,14 @@ async def weather_station(station_id: str, area: str):
 
 
 if __name__ == "__main__":
-    station_id = os.environ.get("STATION_ID", "edge01")
-    area = os.environ.get("EDGE_AREA", "areaA")
+    region = os.environ.get("REGION", "regionA")
 
-    asyncio.run(weather_station(station_id, area))
+    # get areas associated with this region
+    areas_env = os.environ.get("AREAS", "")
+    areas = [a.strip() for a in areas_env.split(",") if a.strip()]
+
+    if not areas:
+        print("ERROR: No areas defined in AREAS environment variable!")
+        exit(1)
+
+    asyncio.run(weather_station(region, areas))
