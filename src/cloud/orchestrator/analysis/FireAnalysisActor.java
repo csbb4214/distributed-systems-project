@@ -19,11 +19,7 @@ private Behavior<Command> onAnalyze(Analyze msg) {
     return this;
 }
 
-private static class MLConfirmed implements Command {
-    final CloudEvent event;
-    final double confidence;
-    MLConfirmed(CloudEvent event, double confidence) {
-        this.event = event;
-        this.confidence = confidence;
-    }
-}
+private record MLConfirmed(
+        CloudEvent event,
+        double confidence
+) implements Command {}
