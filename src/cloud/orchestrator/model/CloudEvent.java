@@ -1,5 +1,3 @@
-package orchestrator.model;
-
 public record CloudEvent(
         String region,
         String area,
