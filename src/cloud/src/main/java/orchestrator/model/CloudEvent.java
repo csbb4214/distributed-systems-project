@@ -1,5 +1,8 @@
 package orchestrator.model;
 
+/*
+ * Datastructure for Nats message pass
+*/
 public record CloudEvent(
         String region,
         String area,

@@ -79,7 +79,7 @@ public class FireAnalysisActor extends AbstractBehavior<FireAnalysisActor.Comman
 
     private Behavior<Command> onMLConfirmed(MLConfirmed msg) {
         getContext().getLog().info(
-                "🔥 ML confirmed fire in {} (conf={})",
+                "ML confirmed fire in {} (conf={})",
                 msg.event().area(),
                 msg.confidence()
         );

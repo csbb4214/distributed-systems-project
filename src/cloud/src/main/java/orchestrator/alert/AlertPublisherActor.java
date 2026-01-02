@@ -6,17 +6,19 @@ import io.nats.client.*;
 
 public class AlertPublisherActor extends AbstractBehavior<AlertPublisherActor.Command> {
 
+    // --------------------
+    // Protocol
+    // --------------------
     public interface Command {}
 
-    public static class SendAlert implements Command {
-        public final String area;
-        public final String text;
-        public SendAlert(String area, String text) {
-            this.area = area;
-            this.text = text;
-        }
-    }
+    public record SendAlert(
+            String area,
+            String text
+    ) implements Command {}
 
+    // --------------------
+    // Factory
+    // --------------------
     public static Behavior<Command> create(String natsUrl) {
         return Behaviors.setup(ctx ->
                 new AlertPublisherActor(ctx, natsUrl)
@@ -37,6 +39,9 @@ public class AlertPublisherActor extends AbstractBehavior<AlertPublisherActor.Co
         }
     }
 
+    // --------------------
+    // Behavior
+    // --------------------
     @Override
     public Receive<Command> createReceive() {
         return newReceiveBuilder()
@@ -46,10 +51,10 @@ public class AlertPublisherActor extends AbstractBehavior<AlertPublisherActor.Co
 
     private Behavior<Command> onSendAlert(SendAlert msg) {
         nc.publish(
-                "alerts." + msg.area,
-                msg.text.getBytes()
+                "alerts." + msg.area(),
+                msg.text().getBytes()
         );
-        getContext().getLog().info("Alert sent to {}", msg.area);
+        getContext().getLog().info("Alert sent to {}", msg.area());
         return this;
     }
 }

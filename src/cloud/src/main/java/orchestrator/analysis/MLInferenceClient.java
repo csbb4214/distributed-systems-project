@@ -22,15 +22,15 @@ public class MLInferenceClient {
                 Map.of("frame", frameB64)
         );
 
+        // make request
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(endpoint + "/infer"))
                 .POST(HttpRequest.BodyPublishers.ofString(body))
                 .header("Content-Type", "application/json")
                 .build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        HttpResponse<String> response =
-                client.send(request, HttpResponse.BodyHandlers.ofString());
-
+        // return mapped response
         return mapper.readValue(response.body(), MLResult.class);
     }
 }

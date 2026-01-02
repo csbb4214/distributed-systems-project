@@ -14,28 +14,20 @@ public class OrchestratorGuardian extends AbstractBehavior<Void> {
         return Behaviors.setup(ctx -> new OrchestratorGuardian(ctx, natsUrl));
     }
 
-    private OrchestratorGuardian(
-            ActorContext<Void> context,
-            String natsUrl
-    ) {
+    private OrchestratorGuardian(ActorContext<Void> context, String natsUrl) {
         super(context);
 
         // create client for communication with ML model
         MLInferenceClient mlClient = new MLInferenceClient("http://ml-ec2:8080/infer");
 
+        // launch all actors
         ActorRef<AlertPublisherActor.Command> alertPublisher =
                 context.spawn(AlertPublisherActor.create(natsUrl), "alertPublisher");
-
         ActorRef<RiskAssessmentActor.Command> riskAssessment =
                 context.spawn(RiskAssessmentActor.create(alertPublisher), "riskAssessment");
-
         ActorRef<FireAnalysisActor.Command> fireAnalysis =
                 context.spawn(FireAnalysisActor.create(riskAssessment, mlClient), "fireAnalysis");
-
-        context.spawn(
-                NatsIngestActor.create(natsUrl, fireAnalysis),
-                "natsIngest"
-        );
+        context.spawn(NatsIngestActor.create(natsUrl, fireAnalysis), "natsIngest");
     }
 
     @Override

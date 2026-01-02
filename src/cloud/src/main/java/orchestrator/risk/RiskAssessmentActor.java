@@ -51,8 +51,7 @@ public class RiskAssessmentActor extends AbstractBehavior<RiskAssessmentActor.Co
                 alertPublisher.tell(
                         new AlertPublisherActor.SendAlert(
                                 area,
-                                "Fire near " + msg.event.area() +
-                                " severity=" + severity
+                                "Fire near " + msg.event.area() + " severity=" + severity
                         )
                 );
             }
