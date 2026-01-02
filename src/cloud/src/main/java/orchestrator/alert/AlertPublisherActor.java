@@ -1,3 +1,5 @@
+package orchestrator.alert;
+
 import akka.actor.typed.*;
 import akka.actor.typed.javadsl.*;
 import io.nats.client.*;

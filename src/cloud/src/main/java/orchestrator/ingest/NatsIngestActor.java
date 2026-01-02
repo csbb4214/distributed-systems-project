@@ -1,7 +1,11 @@
+package orchestrator.ingest;
+
 import akka.actor.typed.*;
 import akka.actor.typed.javadsl.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.nats.client.*;
+import orchestrator.analysis.FireAnalysisActor;
+import orchestrator.model.CloudEvent;
 
 public class NatsIngestActor extends AbstractBehavior<Void> {
 

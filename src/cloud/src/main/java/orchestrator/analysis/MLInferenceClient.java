@@ -1,4 +1,8 @@
+package orchestrator.analysis;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import orchestrator.model.MLResult;
+
 import java.net.http.*;
 import java.net.URI;
 import java.util.Map;

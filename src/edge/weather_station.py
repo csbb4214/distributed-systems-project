@@ -69,7 +69,7 @@ def generate_wind() -> Tuple[float, float]:
 
 
 # ---------------------------------------------------------
-# Main edge process
+# src.main.java.orchestrator.Main edge process
 # ---------------------------------------------------------
 async def weather_station(region: str, areas: list[str], nats_url: str):
     nc = await nats.connect(nats_url)

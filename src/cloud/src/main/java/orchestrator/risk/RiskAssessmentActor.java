@@ -1,17 +1,17 @@
+package orchestrator.risk;
+
 import akka.actor.typed.*;
 import akka.actor.typed.javadsl.*;
+import orchestrator.alert.AlertPublisherActor;
+import orchestrator.model.CloudEvent;
+
 import java.util.Map;
 
 public class RiskAssessmentActor extends AbstractBehavior<RiskAssessmentActor.Command> {
 
     public interface Command {}
 
-    public static class Assess implements Command {
-        public final CloudEvent event;
-        public Assess(CloudEvent event) {
-            this.event = event;
-        }
-    }
+    public record Assess(CloudEvent event) implements Command {}
 
     private static final Map<String, double[]> AREA_COORDS = Map.of(
             "areaA", new double[]{0, 0},
@@ -27,7 +27,7 @@ public class RiskAssessmentActor extends AbstractBehavior<RiskAssessmentActor.Co
         );
     }
 
-    private final ActorRef<AlertPublisherActor.Command> alertPublisher;
+    private final ActorRef<Command> alertPublisher;
 
     private RiskAssessmentActor(
             ActorContext<Command> context,
@@ -46,12 +46,12 @@ public class RiskAssessmentActor extends AbstractBehavior<RiskAssessmentActor.Co
 
     private Behavior<Command> onAssess(Assess msg) {
         for (String area : AREA_COORDS.keySet()) {
-            if (!area.equals(msg.event.area)) {
-                double severity = Math.min(1.0, msg.event.wind_speed / 25.0);
+            if (!area.equals(msg.event.area())) {
+                double severity = Math.min(1.0, msg.event.wind_speed() / 25.0);
                 alertPublisher.tell(
                         new AlertPublisherActor.SendAlert(
                                 area,
-                                "Fire near " + msg.event.area +
+                                "Fire near " + msg.event.area() +
                                 " severity=" + severity
                         )
                 );

@@ -1,5 +1,12 @@
+package orchestrator;
+
 import akka.actor.typed.*;
 import akka.actor.typed.javadsl.*;
+import orchestrator.alert.AlertPublisherActor;
+import orchestrator.analysis.FireAnalysisActor;
+import orchestrator.analysis.MLInferenceClient;
+import orchestrator.ingest.NatsIngestActor;
+import orchestrator.risk.RiskAssessmentActor;
 
 public class OrchestratorGuardian extends AbstractBehavior<Void> {
 
@@ -13,6 +20,9 @@ public class OrchestratorGuardian extends AbstractBehavior<Void> {
     ) {
         super(context);
 
+        // create client for communication with ML model
+        MLInferenceClient mlClient = new MLInferenceClient("http://ml-ec2:8080/infer");
+
         ActorRef<AlertPublisherActor.Command> alertPublisher =
                 context.spawn(AlertPublisherActor.create(natsUrl), "alertPublisher");
 
@@ -20,7 +30,7 @@ public class OrchestratorGuardian extends AbstractBehavior<Void> {
                 context.spawn(RiskAssessmentActor.create(alertPublisher), "riskAssessment");
 
         ActorRef<FireAnalysisActor.Command> fireAnalysis =
-                context.spawn(FireAnalysisActor.create(riskAssessment), "fireAnalysis");
+                context.spawn(FireAnalysisActor.create(riskAssessment, mlClient), "fireAnalysis");
 
         context.spawn(
                 NatsIngestActor.create(natsUrl, fireAnalysis),

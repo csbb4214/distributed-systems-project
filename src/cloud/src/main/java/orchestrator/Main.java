@@ -1,3 +1,5 @@
+package orchestrator;
+
 import akka.actor.typed.ActorSystem;
 
 public class Main {
