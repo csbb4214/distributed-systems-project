@@ -27,7 +27,7 @@ public class RiskAssessmentActor extends AbstractBehavior<RiskAssessmentActor.Co
         );
     }
 
-    private final ActorRef<Command> alertPublisher;
+    private final ActorRef<AlertPublisherActor.Command> alertPublisher;
 
     private RiskAssessmentActor(
             ActorContext<Command> context,
