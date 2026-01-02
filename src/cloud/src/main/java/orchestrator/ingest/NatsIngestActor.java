@@ -22,6 +22,7 @@ public class NatsIngestActor extends AbstractBehavior<Void> {
     }
 
     private final ObjectMapper mapper = new ObjectMapper();
+    private Connection nc;
 
     private NatsIngestActor(
             ActorContext<Void> context,
@@ -31,7 +32,7 @@ public class NatsIngestActor extends AbstractBehavior<Void> {
         super(context);
 
         try {
-            Connection nc = Nats.connect(natsUrl);
+            this.nc = Nats.connect(natsUrl);
 
             Dispatcher dispatcher = nc.createDispatcher(msg -> {
                 try {
@@ -57,6 +58,20 @@ public class NatsIngestActor extends AbstractBehavior<Void> {
     // --------------------
     @Override
     public Receive<Void> createReceive() {
-        return newReceiveBuilder().build();
+        return newReceiveBuilder()
+                .onSignal(PostStop.class, signal -> onPostStop())
+                .build();
+    }
+
+    private Behavior<Void> onPostStop() {
+        if (nc != null) {
+            try {
+                nc.close();
+                getContext().getLog().info("NATS connection closed");
+            } catch (Exception e) {
+                getContext().getLog().warn("Error closing NATS connection", e);
+            }
+        }
+        return this;
     }
 }
