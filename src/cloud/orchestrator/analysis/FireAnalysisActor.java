@@ -1,7 +1,6 @@
 import java.util.concurrent.CompletableFuture;
 
 private Behavior<Command> onAnalyze(Analyze msg) {
-
     CompletableFuture
             .supplyAsync(() -> {
                 try {
@@ -17,14 +16,13 @@ private Behavior<Command> onAnalyze(Analyze msg) {
                     );
                 }
             });
-
     return this;
 }
 
 private static class MLConfirmed implements Command {
-    public final CloudEvent event;
-    public final double confidence;
-    public MLConfirmed(CloudEvent event, double confidence) {
+    final CloudEvent event;
+    final double confidence;
+    MLConfirmed(CloudEvent event, double confidence) {
         this.event = event;
         this.confidence = confidence;
     }
