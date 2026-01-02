@@ -9,6 +9,9 @@ import orchestrator.model.CloudEvent;
 
 public class NatsIngestActor extends AbstractBehavior<Void> {
 
+    // --------------------
+    // Factory
+    // --------------------
     public static Behavior<Void> create(
             String natsUrl,
             ActorRef<FireAnalysisActor.Command> fireAnalysis
@@ -49,6 +52,9 @@ public class NatsIngestActor extends AbstractBehavior<Void> {
         }
     }
 
+    // --------------------
+    // Behavior
+    // --------------------
     @Override
     public Receive<Void> createReceive() {
         return newReceiveBuilder().build();

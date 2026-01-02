@@ -10,6 +10,9 @@ import orchestrator.risk.RiskAssessmentActor;
 
 public class OrchestratorGuardian extends AbstractBehavior<Void> {
 
+    // --------------------
+    // Factory
+    // --------------------
     public static Behavior<Void> create(String natsUrl, String mlUrl) {
         return Behaviors.setup(ctx -> new OrchestratorGuardian(ctx, natsUrl, mlUrl));
     }
@@ -30,6 +33,9 @@ public class OrchestratorGuardian extends AbstractBehavior<Void> {
         context.spawn(NatsIngestActor.create(natsUrl, fireAnalysis), "natsIngest");
     }
 
+    // --------------------
+    // Behavior
+    // --------------------
     @Override
     public Receive<Void> createReceive() {
         return newReceiveBuilder().build();

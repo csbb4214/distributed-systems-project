@@ -9,6 +9,9 @@ import java.util.Map;
 
 public class RiskAssessmentActor extends AbstractBehavior<RiskAssessmentActor.Command> {
 
+    // --------------------
+    // Protocol
+    // --------------------
     public interface Command {}
 
     public record Assess(CloudEvent event) implements Command {}
@@ -19,6 +22,9 @@ public class RiskAssessmentActor extends AbstractBehavior<RiskAssessmentActor.Co
             "areaC", new double[]{6, 1}
     );
 
+    // --------------------
+    // Factory
+    // --------------------
     public static Behavior<Command> create(
             ActorRef<AlertPublisherActor.Command> alertPublisher
     ) {
@@ -37,6 +43,9 @@ public class RiskAssessmentActor extends AbstractBehavior<RiskAssessmentActor.Co
         this.alertPublisher = alertPublisher;
     }
 
+    // --------------------
+    // Behavior
+    // --------------------
     @Override
     public Receive<Command> createReceive() {
         return newReceiveBuilder()
