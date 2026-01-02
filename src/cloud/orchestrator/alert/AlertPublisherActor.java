@@ -47,7 +47,7 @@ public class AlertPublisherActor extends AbstractBehavior<AlertPublisherActor.Co
                 "alerts." + msg.area,
                 msg.text.getBytes()
         );
-        getContext().getLog().info("🚨 Alert sent to {}", msg.area);
+        getContext().getLog().info("Alert sent to {}", msg.area);
         return this;
     }
 }
