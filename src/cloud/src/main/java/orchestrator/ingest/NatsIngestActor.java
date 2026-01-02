@@ -22,7 +22,7 @@ public class NatsIngestActor extends AbstractBehavior<Void> {
     }
 
     private final ObjectMapper mapper = new ObjectMapper();
-    private Connection nc;
+    private final Connection nc;
 
     private NatsIngestActor(
             ActorContext<Void> context,
@@ -47,9 +47,9 @@ public class NatsIngestActor extends AbstractBehavior<Void> {
             dispatcher.subscribe("region.*.processed");
 
             context.getLog().info("Subscribed to region.*.processed");
-
         } catch (Exception e) {
             context.getLog().error("NATS connection failed", e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -67,7 +67,7 @@ public class NatsIngestActor extends AbstractBehavior<Void> {
         if (nc != null) {
             try {
                 nc.close();
-                getContext().getLog().info("NATS connection closed");
+                getContext().getLog().info("NATS connection closed (NatsIngest)");
             } catch (Exception e) {
                 getContext().getLog().warn("Error closing NATS connection", e);
             }

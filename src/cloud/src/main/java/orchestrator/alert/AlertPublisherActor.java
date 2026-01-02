@@ -4,7 +4,8 @@ import akka.actor.typed.*;
 import akka.actor.typed.javadsl.*;
 import io.nats.client.*;
 
-public class AlertPublisherActor extends AbstractBehavior<AlertPublisherActor.Command> {
+public class AlertPublisherActor
+        extends AbstractBehavior<AlertPublisherActor.Command> {
 
     // --------------------
     // Protocol
@@ -33,8 +34,9 @@ public class AlertPublisherActor extends AbstractBehavior<AlertPublisherActor.Co
     ) {
         super(context);
         try {
-            nc = Nats.connect(natsUrl);
+            this.nc = Nats.connect(natsUrl);
         } catch (Exception e) {
+            context.getLog().error("NATS connection failed", e);
             throw new RuntimeException(e);
         }
     }
@@ -46,6 +48,7 @@ public class AlertPublisherActor extends AbstractBehavior<AlertPublisherActor.Co
     public Receive<Command> createReceive() {
         return newReceiveBuilder()
                 .onMessage(SendAlert.class, this::onSendAlert)
+                .onSignal(PostStop.class, signal -> onPostStop())
                 .build();
     }
 
@@ -55,6 +58,18 @@ public class AlertPublisherActor extends AbstractBehavior<AlertPublisherActor.Co
                 msg.text().getBytes()
         );
         getContext().getLog().info("Alert sent to {}", msg.area());
+        return this;
+    }
+
+    private Behavior<Command> onPostStop() {
+        if (nc != null) {
+            try {
+                nc.close();
+                getContext().getLog().info("NATS connection closed (AlertPublisher)");
+            } catch (Exception e) {
+                getContext().getLog().warn("Error closing NATS connection", e);
+            }
+        }
         return this;
     }
 }
