@@ -67,7 +67,7 @@
                 </configuration>
             </plugin>
 
-            <!-- Fat JAR (to export a single jar for everything) -->
+            <!-- Fat JAR (to export a single .jar for everything) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>

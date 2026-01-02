@@ -10,15 +10,15 @@ import orchestrator.risk.RiskAssessmentActor;
 
 public class OrchestratorGuardian extends AbstractBehavior<Void> {
 
-    public static Behavior<Void> create(String natsUrl) {
-        return Behaviors.setup(ctx -> new OrchestratorGuardian(ctx, natsUrl));
+    public static Behavior<Void> create(String natsUrl, String mlUrl) {
+        return Behaviors.setup(ctx -> new OrchestratorGuardian(ctx, natsUrl, mlUrl));
     }
 
-    private OrchestratorGuardian(ActorContext<Void> context, String natsUrl) {
+    private OrchestratorGuardian(ActorContext<Void> context, String natsUrl, String mlUrl) {
         super(context);
 
         // create client for communication with ML model
-        MLInferenceClient mlClient = new MLInferenceClient("http://ml-ec2:8080/infer");
+        MLInferenceClient mlClient = new MLInferenceClient(mlUrl);
 
         // launch all actors
         ActorRef<AlertPublisherActor.Command> alertPublisher =
