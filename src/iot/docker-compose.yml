@@ -7,11 +7,6 @@
 ## One alarm radio for areaB1
 
 services:
-  nats:
-    image: nats:latest
-    container_name: nats
-    ports:
-      - "4222:4222"
 
   camera_areaa1:
     build: ./camera
@@ -19,9 +14,7 @@ services:
       AREA: "areaA1"
       FRAMES_DIR: "/app/frames_cam01"
       FPS: 1
-      NATS_URL: "nats://nats:4222"
-    depends_on:
-      - nats
+      NATS_URL: "nats://34.229.163.65:4222"
 
   camera_areab1:
     build: ./camera
@@ -29,22 +22,16 @@ services:
       AREA: "areaB1"
       FRAMES_DIR: "/app/frames_cam02"
       FPS: 1
-      NATS_URL: "nats://nats:4222"
-    depends_on:
-      - nats
+      NATS_URL: "nats://34.229.163.65:4222"
 
   alarm_areaa1:
     build: ./alarm
     environment:
       AREA: "areaA1"
-      NATS_URL: "nats://nats:4222"
-    depends_on:
-      - nats
+      NATS_URL: "nats://34.229.163.65:4222"
 
   alarm_areab1:
     build: ./alarm
     environment:
       AREA: "areaB1"
-      NATS_URL: "nats://nats:4222"
-    depends_on:
-      - nats
+      NATS_URL: "nats://34.229.163.65:4222"
