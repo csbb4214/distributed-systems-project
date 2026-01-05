@@ -17,6 +17,7 @@ public class RiskAssessmentActor extends AbstractBehavior<RiskAssessmentActor.Co
     public record Assess(CloudEvent event) implements Command {}
 
     // TODO: This should be extern information for cloud/edge/IoT for data-coherence
+    // TODO: This should also be longitude and latitude instead of simple cartesian?
     private static final Map<String, double[]> AREA_COORDS = Map.of(
             "areaA1", new double[]{0, 0},
             "areaB1", new double[]{3, 2}
