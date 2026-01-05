@@ -7,4 +7,4 @@ COPY weather_station.py .
 
 RUN pip install nats-py numpy
 
-CMD ["python", "-u", "edge_station.py"]
+CMD ["python", "-u", "weather_station.py"]
