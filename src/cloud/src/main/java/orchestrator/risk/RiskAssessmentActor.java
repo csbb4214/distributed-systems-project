@@ -54,6 +54,7 @@ public class RiskAssessmentActor extends AbstractBehavior<RiskAssessmentActor.Co
     }
 
     private Behavior<Command> onAssess(Assess msg) {
+        // TODO: Use wind direction to filter out unaffected areas
         for (String area : AREA_COORDS.keySet()) {
             if (!area.equals(msg.event.area())) {
                 double severity = Math.min(1.0, msg.event.wind_speed() / 25.0);
