@@ -4,7 +4,7 @@ services:
     container_name: edge_station_regionA
     environment:
       REGION: "regionA"
-      AREAS: "areaA1,areaA2"
+      AREAS: "areaA1"
       NATS_URL: "nats://host.docker.internal:4222"
     depends_on:
       - nats
@@ -15,7 +15,7 @@ services:
     container_name: edge_station_regionB
     environment:
       REGION: "regionB"
-      AREAS: "areaB1,areaB2,areaB3"
+      AREAS: "areaB1"
       NATS_URL: "nats://host.docker.internal:4222"
     depends_on:
       - nats
