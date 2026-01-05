@@ -2,6 +2,7 @@ package orchestrator.analysis;
 
 import akka.actor.typed.*;
 import akka.actor.typed.javadsl.*;
+import orchestrator.alert.AlertPublisherActor;
 import orchestrator.model.CloudEvent;
 import orchestrator.risk.RiskAssessmentActor;
 
@@ -26,23 +27,27 @@ public class FireAnalysisActor extends AbstractBehavior<FireAnalysisActor.Comman
     // --------------------
     public static Behavior<Command> create(
             ActorRef<RiskAssessmentActor.Command> riskAssessment,
+            ActorRef<AlertPublisherActor.Command> alertPublisher,
             MLInferenceClient mlClient
     ) {
         return Behaviors.setup(ctx ->
-                new FireAnalysisActor(ctx, riskAssessment, mlClient)
+                new FireAnalysisActor(ctx, riskAssessment, alertPublisher, mlClient)
         );
     }
 
     private final ActorRef<RiskAssessmentActor.Command> riskAssessment;
+    private final ActorRef<AlertPublisherActor.Command> alertPublisher;
     private final MLInferenceClient mlClient;
 
     private FireAnalysisActor(
             ActorContext<Command> context,
             ActorRef<RiskAssessmentActor.Command> riskAssessment,
+            ActorRef<AlertPublisherActor.Command> alertPublisher,
             MLInferenceClient mlClient
     ) {
         super(context);
         this.riskAssessment = riskAssessment;
+        this.alertPublisher = alertPublisher;
         this.mlClient = mlClient;
     }
 
@@ -78,10 +83,18 @@ public class FireAnalysisActor extends AbstractBehavior<FireAnalysisActor.Comman
     }
 
     private Behavior<Command> onMLConfirmed(MLConfirmed msg) {
+        String affectedArea = msg.event().area();
+
         getContext().getLog().info(
                 "ML confirmed fire in {} (conf={})",
-                msg.event().area(),
+                affectedArea,
                 msg.confidence()
+        );
+        alertPublisher.tell(
+                new AlertPublisherActor.SendAlert(
+                        affectedArea,
+                        "Fire detected confidence=" + msg.confidence()
+                )
         );
 
         riskAssessment.tell(
