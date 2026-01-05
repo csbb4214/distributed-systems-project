@@ -36,8 +36,7 @@ public class NatsIngestActor extends AbstractBehavior<Void> {
 
             Dispatcher dispatcher = nc.createDispatcher(msg -> {
                 try {
-                    CloudEvent event =
-                            mapper.readValue(msg.getData(), CloudEvent.class);
+                    CloudEvent event = mapper.readValue(msg.getData(), CloudEvent.class);
                     fireAnalysis.tell(new FireAnalysisActor.Analyze(event));
                 } catch (Exception e) {
                     context.getLog().error("JSON parse failed", e);

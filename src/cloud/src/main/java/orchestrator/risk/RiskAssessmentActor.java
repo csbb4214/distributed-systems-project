@@ -16,10 +16,11 @@ public class RiskAssessmentActor extends AbstractBehavior<RiskAssessmentActor.Co
 
     public record Assess(CloudEvent event) implements Command {}
 
+    // TODO: This should be extern information for cloud/edge/IoT for data-coherence
+    // TODO: This should also be longitude and latitude instead of simple cartesian?
     private static final Map<String, double[]> AREA_COORDS = Map.of(
-            "areaA", new double[]{0, 0},
-            "areaB", new double[]{3, 2},
-            "areaC", new double[]{6, 1}
+            "areaA1", new double[]{0, 0},
+            "areaB1", new double[]{3, 2}
     );
 
     // --------------------
@@ -54,14 +55,47 @@ public class RiskAssessmentActor extends AbstractBehavior<RiskAssessmentActor.Co
     }
 
     private Behavior<Command> onAssess(Assess msg) {
-        // TODO: Use wind direction to filter out unaffected areas
-        for (String area : AREA_COORDS.keySet()) {
-            if (!area.equals(msg.event.area())) {
-                double severity = Math.min(1.0, msg.event.wind_speed() / 25.0);
+        double[] fireCoord = AREA_COORDS.get(msg.event.area());
+        if (fireCoord == null) {
+            return this;
+        }
+
+        // Convert wind direction (degrees) to unit vector
+        double radians = Math.toRadians(msg.event.wind_direction());
+        double windX = Math.sin(radians);   // East-West
+        double windY = Math.cos(radians);   // North-South
+
+        for (Map.Entry<String, double[]> entry : AREA_COORDS.entrySet()) {
+            String area = entry.getKey();
+            double[] targetCoord = entry.getValue();
+
+            if (area.equals(msg.event.area())) {
+                continue;
+            }
+
+            // Vector from fire to target area
+            double dx = targetCoord[0] - fireCoord[0];
+            double dy = targetCoord[1] - fireCoord[1];
+
+            // Dot product: >0 means that this is roughly the direction
+            double dot = dx * windX + dy * windY;
+
+            if (dot > 0) {
+                // Calculate urgency value based on wind speed, distance, and time passed
+                double windFactor = Math.min(1.0, msg.event.wind_speed() / 25.0);
+
+                double distance = Math.sqrt(dx * dx + dy * dy);
+                double distanceFactor = Math.exp(-distance / 5.0);
+
+                double now = System.currentTimeMillis() / 1000.0;
+                double ageSeconds = now - msg.event.timestamp();
+                double timeFactor = Math.exp(-ageSeconds / 60.0);
+
+                double urgency = windFactor * distanceFactor * timeFactor;
                 alertPublisher.tell(
                         new AlertPublisherActor.SendAlert(
                                 area,
-                                "Fire near " + msg.event.area() + " severity=" + severity
+                                "Fire near " + msg.event.area() + " urgency=" + urgency
                         )
                 );
             }
