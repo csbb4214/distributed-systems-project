@@ -6,9 +6,6 @@ services:
       REGION: "regionA"
       AREAS: "areaA1"
       NATS_URL: "nats://100.26.146.73:4222"
-    depends_on:
-      - nats
-    restart: unless-stopped
 
   weather_station_regionb:
     build: .
@@ -17,6 +14,3 @@ services:
       REGION: "regionB"
       AREAS: "areaB1"
       NATS_URL: "nats://100.26.146.73:4222"
-    depends_on:
-      - nats
-    restart: unless-stopped
