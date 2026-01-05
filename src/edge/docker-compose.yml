@@ -5,7 +5,7 @@ services:
     environment:
       REGION: "regionA"
       AREAS: "areaA1,areaA2"
-      NATS_URL: "nats://host.docker.internal:4222"
+      NATS_URL: "nats://100.26.146.73:4222"
     depends_on:
       - nats
     restart: unless-stopped
@@ -16,7 +16,7 @@ services:
     environment:
       REGION: "regionB"
       AREAS: "areaB1,areaB2,areaB3"
-      NATS_URL: "nats://host.docker.internal:4222"
+      NATS_URL: "nats://100.26.146.73:4222"
     depends_on:
       - nats
     restart: unless-stopped

@@ -1,20 +1,18 @@
 # this creates the following services as examples:
 
-## NATS server
 ## One camera sender for areaA1 (in regionA -> EDGE CONNECTION)
 ## One camera sender for areaB1 (in regionB -> EDGE CONNECTION)
 ## One alarm radio for areaA1
 ## One alarm radio for areaB1
 
 services:
-
   camera_areaa1:
     build: ./camera
     environment:
       AREA: "areaA1"
       FRAMES_DIR: "/app/frames_cam01"
       FPS: 1
-      NATS_URL: "nats://34.229.163.65:4222"
+      NATS_URL: "nats://100.26.146.73:4222"
 
   camera_areab1:
     build: ./camera
@@ -22,16 +20,16 @@ services:
       AREA: "areaB1"
       FRAMES_DIR: "/app/frames_cam02"
       FPS: 1
-      NATS_URL: "nats://34.229.163.65:4222"
+      NATS_URL: "nats://100.26.146.73:4222"
 
   alarm_areaa1:
     build: ./alarm
     environment:
       AREA: "areaA1"
-      NATS_URL: "nats://34.229.163.65:4222"
+      NATS_URL: "nats://100.26.146.73:4222"
 
   alarm_areab1:
     build: ./alarm
     environment:
       AREA: "areaB1"
-      NATS_URL: "nats://34.229.163.65:4222"
+      NATS_URL: "nats://100.26.146.73:4222"
