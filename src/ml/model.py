@@ -1,23 +1,22 @@
 import torch
 import torch.nn as nn
+from torchvision import models
 
-class FireCNN(nn.Module):
-    def __init__(self):
+
+CLASS_NAMES = ["fire", "no_fire", "smoke"]
+
+
+class FireSmokeNet(nn.Module):
+    """
+    Simple transfer learning model:
+    ResNet18 backbone + 3-class classifier head (fire / no_fire / smoke).
+    Output are logits for 3 classes (use softmax for probabilities).
+    """
+    def __init__(self, num_classes: int = 3):
         super().__init__()
+        self.backbone = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
+        in_features = self.backbone.fc.in_features
+        self.backbone.fc = nn.Linear(in_features, num_classes)
 
-        self.net = nn.Sequential(
-            nn.Conv2d(3, 16, 3, stride=2),
-            nn.ReLU(),
-            nn.Conv2d(16, 32, 3, stride=2),
-            nn.ReLU(),
-            nn.Conv2d(32, 64, 3, stride=2),
-            nn.ReLU(),
-            nn.AdaptiveAvgPool2d((1, 1)),
-        )
-
-        self.classifier = nn.Linear(64, 1)
-
-    def forward(self, x):
-        x = self.net(x)
-        x = x.view(x.size(0), -1)
-        return torch.sigmoid(self.classifier(x))
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.backbone(x)
