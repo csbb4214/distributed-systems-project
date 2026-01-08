@@ -92,10 +92,11 @@ async def weather_station(region: str, areas: list[str], nats_url: str):
 
         # If confidence is low, skip sending to cloud to reduce load
         if conf_smoke < 0.014 and conf_fire == 0.00:
-            print(f"[Station {region}] Frame from {area}: no fire detected (conf_smoke={conf_smoke:.4f})")
+            print(f"[Station {region}] Frame from {area}: no fire and smoke detected")
             return
 
-        print(f"[Station {region}] Suspicious frame from {area}! conf_fire={conf_fire:.3f} conf_smoke={conf_smoke:.3f}")
+        # print(f"[Station {region}] Suspicious frame from {area}! conf_fire={conf_fire:.3f} conf_smoke={conf_smoke:.3f}")
+        print(f"[Station {region}] Suspicious frame from {area} detected!")
 
         # Encode frame to Base64 for safe NATS transport
         _, jpeg_data = cv2.imencode(".jpg", frame_small)
