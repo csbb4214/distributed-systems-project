@@ -13,7 +13,7 @@ public class Main {
                 "NATS_URL", "nats://98.95.255.36:4222"
         );
         String mlUrl = System.getenv().getOrDefault(
-                "ML_URL", "http://107.20.119.21:8000"
+                "ML_URL", "http://34.233.208.20:8000"
         );
 
         // Parse AREA_COORDS from environment variable (as json)
