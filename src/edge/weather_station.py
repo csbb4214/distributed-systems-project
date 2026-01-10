@@ -61,7 +61,6 @@ def generate_wind() -> Tuple[float, float]:
     return speed, direction
 
 
-# src.main.java.orchestrator.Main edge process
 async def weather_station(region: str, areas: list[str], nats_url: str):
     nc = await nats.connect(nats_url)
 
@@ -71,47 +70,50 @@ async def weather_station(region: str, areas: list[str], nats_url: str):
     print(f"[Station {region}] Publishing to '{cloud_subject}'")
 
     async def msg_handler(msg):
-        area = msg.subject.split(".")[1]
-        raw_bytes = msg.data
+        t_received = time.monotonic_ns()
+
+        payload = json.loads(msg.data.decode())
+        area = payload["area"]
+        trace = payload["trace"]
+        frame_b64 = payload["frame_bytes_b64"]
+
+        trace["timestamps"]["edge_received"] = t_received
 
         # Decode image
+        raw_bytes = base64.b64decode(frame_b64)
         np_arr = np.frombuffer(raw_bytes, np.uint8)
         frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
-        # Resize to reduce CPU & bandwidth
         frame_small = cv2.resize(frame, (320, 240))
 
-        # Lightweight fire detection
         conf_smoke = detect_smoke(frame_small)
         conf_fire = 0.00
         if conf_smoke < 0.014:
             conf_fire = detect_fire(frame_small)
 
-        # Wind simulation
+        trace["timestamps"]["edge_filtered"] = time.monotonic_ns()
+
         wind_speed, wind_direction = generate_wind()
 
-        # If confidence is low, skip sending to cloud to reduce load
+        # Drop if no danger
         if conf_smoke < 0.014 and conf_fire == 0.00:
-            print(f"[Station {region}] Frame from {area}: no fire and smoke detected")
             return
 
-        # print(f"[Station {region}] Suspicious frame from {area}! conf_fire={conf_fire:.3f} conf_smoke={conf_smoke:.3f}")
-        print(f"[Station {region}] Suspicious frame from {area} detected!")
-
-        # Encode frame to Base64 for safe NATS transport
         _, jpeg_data = cv2.imencode(".jpg", frame_small)
         jpeg_b64 = base64.b64encode(jpeg_data).decode()
 
-        # Create event package
         event = {
             "region": region,
             "area": area,
-            "timestamp": time.time(),
+            "trace": trace,
             "conf_fire": conf_fire,
+            "conf_smoke": conf_smoke,
             "wind_speed": wind_speed,
             "wind_direction": wind_direction,
             "frame_jpeg_b64": jpeg_b64
         }
+
+        trace["timestamps"]["edge_sent"] = time.monotonic_ns()
 
         await nc.publish(cloud_subject, json.dumps(event).encode())
 
