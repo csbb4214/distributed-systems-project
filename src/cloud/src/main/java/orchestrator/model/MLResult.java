@@ -11,14 +11,6 @@ public record MLResult(
 
         Map<String, Double> probs
 ) {
-    public boolean isFire() {
-        return "fire".equalsIgnoreCase(predictedClass);
-    }
-
-    public boolean isSmoke() {
-        return "smoke".equalsIgnoreCase(predictedClass);
-    }
-
     public double fireProbability() {
         return probs.getOrDefault("fire", 0.0);
     }
