@@ -29,7 +29,7 @@ public class OrchestratorGuardian extends AbstractBehavior<Void> {
         ActorRef<RiskAssessmentActor.Command> riskAssessment =
                 context.spawn(RiskAssessmentActor.create(alertPublisher), "riskAssessment");
         ActorRef<FireAnalysisActor.Command> fireAnalysis =
-                context.spawn(FireAnalysisActor.create(riskAssessment, mlClient), "fireAnalysis");
+                context.spawn(FireAnalysisActor.create(riskAssessment, alertPublisher, mlClient), "fireAnalysis");
         context.spawn(NatsIngestActor.create(natsUrl, fireAnalysis), "natsIngest");
     }
 

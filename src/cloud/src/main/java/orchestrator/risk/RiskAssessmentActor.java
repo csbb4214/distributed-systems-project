@@ -88,15 +88,15 @@ public class RiskAssessmentActor extends AbstractBehavior<RiskAssessmentActor.Co
                 double distanceFactor = Math.exp(-distance / 5.0);
 
                 double now = System.currentTimeMillis() / 1000.0;
-                double ageSeconds = now - msg.event.timestamp();
+                double ageSeconds = now - msg.event.trace().timestamps().get("iot_capture");
                 double timeFactor = Math.exp(-ageSeconds / 60.0);
 
                 double urgency = windFactor * distanceFactor * timeFactor;
                 alertPublisher.tell(
                         new AlertPublisherActor.SendAlert(
                                 area,
-                                "Fire near " + msg.event.area() + " urgency=" + urgency
-                        )
+                                "Fire near " + msg.event.area() + " urgency=" + urgency,
+                                msg.event().trace())
                 );
             }
         }

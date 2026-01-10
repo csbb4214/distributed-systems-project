@@ -19,18 +19,22 @@ public class MLInferenceClient {
 
     public MLResult infer(String frameB64) throws Exception {
         String body = mapper.writeValueAsString(
-                Map.of("frame", frameB64)
+                Map.of("frame_jpeg_b64", frameB64)
         );
 
-        // make request
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(endpoint + "/infer"))
                 .POST(HttpRequest.BodyPublishers.ofString(body))
                 .header("Content-Type", "application/json")
                 .build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        // return mapped response
+        HttpResponse<String> response =
+                client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() != 200) {
+            throw new RuntimeException("ML server error: " + response.body());
+        }
+
         return mapper.readValue(response.body(), MLResult.class);
     }
 }
