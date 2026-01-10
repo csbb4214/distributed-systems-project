@@ -2,6 +2,7 @@ package orchestrator.alert;
 
 import akka.actor.typed.*;
 import akka.actor.typed.javadsl.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.nats.client.*;
 import orchestrator.model.Trace;
 
@@ -56,7 +57,7 @@ public class AlertPublisherActor
     private Behavior<Command> onSendAlert(SendAlert msg) {
         try {
             // Build alert payload
-            String json = new com.fasterxml.jackson.databind.ObjectMapper()
+            String json = new ObjectMapper()
                     .writeValueAsString(
                             java.util.Map.of(
                                     "text", msg.text(),
