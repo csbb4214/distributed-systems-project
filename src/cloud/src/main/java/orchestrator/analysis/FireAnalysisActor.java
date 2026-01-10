@@ -72,9 +72,9 @@ public class FireAnalysisActor extends AbstractBehavior<FireAnalysisActor.Comman
                     }
                 })
                 .thenAccept(result -> {
-                    if (result != null && result.fire()) {
+                    if (result != null && result.fireProbability() > 0.7) {
                         getContext().getSelf().tell(
-                                new MLConfirmed(msg.event(), result.confidence())
+                                new MLConfirmed(msg.event(), result.fireProbability())
                         );
                     }
                 });
