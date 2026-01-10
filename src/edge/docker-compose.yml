@@ -5,7 +5,7 @@ services:
     environment:
       REGION: "regionA"
       AREAS: "areaA1"
-      NATS_URL: "nats://54.226.157.2:4222"
+      NATS_URL: "nats://98.95.255.36:4222"
 
   weather_station_regionb:
     build: .
@@ -13,4 +13,4 @@ services:
     environment:
       REGION: "regionB"
       AREAS: "areaB1"
-      NATS_URL: "nats://54.226.157.2:4222"
+      NATS_URL: "nats://98.95.255.36:4222"

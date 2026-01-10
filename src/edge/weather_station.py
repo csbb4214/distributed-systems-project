@@ -130,7 +130,7 @@ async def weather_station(region: str, areas: list[str], nats_url: str):
 
 if __name__ == "__main__":
     region = os.environ.get("REGION", "regionA")
-    nats_url = os.environ.get("NATS_URL", "nats://nats:4222")
+    nats_url = os.environ.get("NATS_URL", "nats://98.95.255.36:4222")
 
     # get areas associated with this region
     areas_env = os.environ.get("AREAS", "")

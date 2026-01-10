@@ -40,6 +40,6 @@ async def alarm_radio(nats_url: str, area: str):
 
 if __name__ == "__main__":
     area = os.environ.get("AREA", "areaA")
-    nats_url = os.environ.get("NATS_URL", "nats://nats:4222")
+    nats_url = os.environ.get("NATS_URL", "nats://98.95.255.36:4222")
 
     asyncio.run(alarm_radio(nats_url, area))

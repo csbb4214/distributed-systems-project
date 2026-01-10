@@ -12,7 +12,7 @@ services:
       AREA: "areaA1"
       FRAMES_DIR: "/app/frames_cam01"
       FPS: 1
-      NATS_URL: "nats://100.26.146.73:4222"
+      NATS_URL: "nats://98.95.255.36:4222"
 
   camera_areab1:
     build: ./camera
@@ -20,16 +20,16 @@ services:
       AREA: "areaB1"
       FRAMES_DIR: "/app/frames_cam02"
       FPS: 1
-      NATS_URL: "nats://100.26.146.73:4222"
+      NATS_URL: "nats://98.95.255.36:4222"
 
   alarm_areaa1:
     build: ./alarm
     environment:
       AREA: "areaA1"
-      NATS_URL: "nats://100.26.146.73:4222"
+      NATS_URL: "nats://98.95.255.36:4222"
 
   alarm_areab1:
     build: ./alarm
     environment:
       AREA: "areaB1"
-      NATS_URL: "nats://100.26.146.73:4222"
+      NATS_URL: "nats://98.95.255.36:4222"

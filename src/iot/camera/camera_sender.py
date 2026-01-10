@@ -50,6 +50,6 @@ if __name__ == "__main__":
     area = os.environ.get("AREA", "areaA")
     frames_dir = os.environ.get("FRAMES_DIR", "frames")
     fps = int(os.environ.get("FPS", "1"))
-    nats_url = os.environ.get("NATS_URL", "nats://nats:4222")
+    nats_url = os.environ.get("NATS_URL", "nats://98.95.255.36:4222")
 
     asyncio.run(camera_sender(nats_url, area, frames_dir, fps))
