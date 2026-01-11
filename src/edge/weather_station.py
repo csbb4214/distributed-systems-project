@@ -97,7 +97,10 @@ async def weather_station(region: str, areas: list[str], nats_url: str):
 
         # Drop if no danger
         if conf_smoke < 0.014 and conf_fire == 0.00:
+            print(f"[Station {region}] Frame from {area}: CLEAN (Smoke: {conf_smoke:.5f}, Fire: {conf_fire:.5f}) -> Dropping.")
             return
+
+        print(f"[Station {region}] Frame from {area}: SUSPICIOUS! Sending to Cloud (Smoke: {conf_smoke:.5f}, Fire: {conf_fire:.5f})")
 
         _, jpeg_data = cv2.imencode(".jpg", frame_small)
         jpeg_b64 = base64.b64encode(jpeg_data).decode()
