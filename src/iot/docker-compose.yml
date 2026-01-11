@@ -3,7 +3,7 @@ services:
     build: ./camera
     environment:
       AREA: "areaA1"
-      FRAMES_DIR: "/app/frames_cam01"
+      FRAMES_DIR: "/app/frame_fire"
       FPS: 1
       NATS_URL: "nats://98.95.255.36:4222"
 
