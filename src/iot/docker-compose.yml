@@ -1,10 +1,3 @@
-# this creates the following services as examples:
-
-## One camera sender for areaA1 (in regionA -> EDGE CONNECTION)
-## One camera sender for areaB1 (in regionB -> EDGE CONNECTION)
-## One alarm radio for areaA1
-## One alarm radio for areaB1
-
 services:
   camera_areaa1:
     build: ./camera
@@ -27,9 +20,13 @@ services:
     environment:
       AREA: "areaA1"
       NATS_URL: "nats://98.95.255.36:4222"
+    volumes:
+      - ./alarm_logs/areaa1:/app/data  # Mount to subdirectory
 
   alarm_areab1:
     build: ./alarm
     environment:
       AREA: "areaB1"
       NATS_URL: "nats://98.95.255.36:4222"
+    volumes:
+      - ./alarm_logs/areab1:/app/data  # Mount to subdirectory

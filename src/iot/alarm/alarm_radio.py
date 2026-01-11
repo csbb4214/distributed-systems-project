@@ -5,7 +5,7 @@ import json
 import time
 
 
-TRACE_LOG = "traces.jsonl"   # newline-delimited JSON for easy plotting
+TRACE_LOG = "/app/data/traces.jsonl"
 
 # function acts as receiver for alarms
 async def alarm_radio(nats_url: str, area: str):
