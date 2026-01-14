@@ -2,7 +2,9 @@ package orchestrator.alert;
 
 import akka.actor.typed.*;
 import akka.actor.typed.javadsl.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.nats.client.*;
+import orchestrator.model.Trace;
 
 public class AlertPublisherActor
         extends AbstractBehavior<AlertPublisherActor.Command> {
@@ -14,8 +16,8 @@ public class AlertPublisherActor
 
     public record SendAlert(
             String area,
-            String text
-    ) implements Command {}
+            String text,
+            Trace trace) implements Command {}
 
     // --------------------
     // Factory
@@ -53,13 +55,34 @@ public class AlertPublisherActor
     }
 
     private Behavior<Command> onSendAlert(SendAlert msg) {
-        nc.publish(
-                "alerts." + msg.area(),
-                msg.text().getBytes()
-        );
-        getContext().getLog().info("Alert sent to {}", msg.area());
+        try {
+            // Build alert payload
+            String json = new ObjectMapper()
+                    .writeValueAsString(
+                            java.util.Map.of(
+                                    "text", msg.text(),
+                                    "trace", msg.trace()
+                            )
+                    );
+
+            nc.publish(
+                    "alerts." + msg.area(),
+                    json.getBytes()
+            );
+
+            getContext().getLog().info(
+                    "Alert sent to {} (trace={})",
+                    msg.area(),
+                    msg.trace().trace_id()
+            );
+
+        } catch (Exception e) {
+            getContext().getLog().error("Failed to publish alert", e);
+        }
+
         return this;
     }
+
 
     private Behavior<Command> onPostStop() {
         if (nc != null) {

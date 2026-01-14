@@ -16,32 +16,30 @@ public class RiskAssessmentActor extends AbstractBehavior<RiskAssessmentActor.Co
 
     public record Assess(CloudEvent event) implements Command {}
 
-    // TODO: This should be extern information for cloud/edge/IoT for data-coherence
-    // TODO: This should also be longitude and latitude instead of simple cartesian?
-    private static final Map<String, double[]> AREA_COORDS = Map.of(
-            "areaA1", new double[]{0, 0},
-            "areaB1", new double[]{3, 2}
-    );
-
     // --------------------
     // Factory
     // --------------------
     public static Behavior<Command> create(
-            ActorRef<AlertPublisherActor.Command> alertPublisher
+            ActorRef<AlertPublisherActor.Command> alertPublisher,
+            Map<String, double[]> areaCoords
     ) {
         return Behaviors.setup(ctx ->
-                new RiskAssessmentActor(ctx, alertPublisher)
+                new RiskAssessmentActor(ctx, alertPublisher, areaCoords)
         );
     }
 
     private final ActorRef<AlertPublisherActor.Command> alertPublisher;
+    // This should technically be extern information for cloud/edge/IoT for data-coherence
+    private final Map<String, double[]> areaCoords;
 
     private RiskAssessmentActor(
             ActorContext<Command> context,
-            ActorRef<AlertPublisherActor.Command> alertPublisher
+            ActorRef<AlertPublisherActor.Command> alertPublisher,
+            Map<String, double[]> areaCoords
     ) {
         super(context);
         this.alertPublisher = alertPublisher;
+        this.areaCoords = areaCoords;
     }
 
     // --------------------
@@ -55,7 +53,7 @@ public class RiskAssessmentActor extends AbstractBehavior<RiskAssessmentActor.Co
     }
 
     private Behavior<Command> onAssess(Assess msg) {
-        double[] fireCoord = AREA_COORDS.get(msg.event.area());
+        double[] fireCoord = areaCoords.get(msg.event.area());
         if (fireCoord == null) {
             return this;
         }
@@ -65,7 +63,7 @@ public class RiskAssessmentActor extends AbstractBehavior<RiskAssessmentActor.Co
         double windX = Math.sin(radians);   // East-West
         double windY = Math.cos(radians);   // North-South
 
-        for (Map.Entry<String, double[]> entry : AREA_COORDS.entrySet()) {
+        for (Map.Entry<String, double[]> entry : areaCoords.entrySet()) {
             String area = entry.getKey();
             double[] targetCoord = entry.getValue();
 
@@ -88,15 +86,15 @@ public class RiskAssessmentActor extends AbstractBehavior<RiskAssessmentActor.Co
                 double distanceFactor = Math.exp(-distance / 5.0);
 
                 double now = System.currentTimeMillis() / 1000.0;
-                double ageSeconds = now - msg.event.timestamp();
+                double ageSeconds = now - msg.event.trace().timestamps().get("iot_capture");
                 double timeFactor = Math.exp(-ageSeconds / 60.0);
 
                 double urgency = windFactor * distanceFactor * timeFactor;
                 alertPublisher.tell(
                         new AlertPublisherActor.SendAlert(
                                 area,
-                                "Fire near " + msg.event.area() + " urgency=" + urgency
-                        )
+                                "Fire near " + msg.event.area() + " urgency=" + urgency,
+                                msg.event().trace())
                 );
             }
         }

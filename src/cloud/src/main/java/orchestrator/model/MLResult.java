@@ -1,9 +1,17 @@
 package orchestrator.model;
 
-/*
-* Result for the extern ML Analysis
-*/
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Map;
+
 public record MLResult(
-        boolean fire,
-        double confidence
-) {}
+        @JsonProperty("predicted_class")
+        String predictedClass,
+
+        double confidence,
+
+        Map<String, Double> probs
+) {
+    public double fireProbability() {
+        return probs.getOrDefault("fire", 0.0);
+    }
+}

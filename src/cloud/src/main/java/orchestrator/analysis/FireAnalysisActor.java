@@ -63,6 +63,13 @@ public class FireAnalysisActor extends AbstractBehavior<FireAnalysisActor.Comman
     }
 
     private Behavior<Command> onAnalyze(Analyze msg) {
+
+        // Mark ML request start
+        msg.event().trace().timestamps().put(
+                "ml_request_start",
+                System.nanoTime()
+        );
+
         CompletableFuture
                 .supplyAsync(() -> {
                     try {
@@ -72,9 +79,22 @@ public class FireAnalysisActor extends AbstractBehavior<FireAnalysisActor.Comman
                     }
                 })
                 .thenAccept(result -> {
-                    if (result != null && result.fire()) {
+                    if (result != null && result.fireProbability() > 0.7) {
+
+                        // Mark ML request end
+                        msg.event().trace().timestamps().put(
+                                "ml_request_end",
+                                System.nanoTime()
+                        );
+
+                        // Mark Cloud decision time
+                        msg.event().trace().timestamps().put(
+                                "cloud_decision",
+                                System.nanoTime()
+                        );
+
                         getContext().getSelf().tell(
-                                new MLConfirmed(msg.event(), result.confidence())
+                                new MLConfirmed(msg.event(), result.fireProbability())
                         );
                     }
                 });
@@ -90,10 +110,18 @@ public class FireAnalysisActor extends AbstractBehavior<FireAnalysisActor.Comman
                 affectedArea,
                 msg.confidence()
         );
+
+        // Alarm publication timestamp
+        msg.event().trace().timestamps().put(
+                "alarm_published",
+                System.nanoTime()
+        );
+
         alertPublisher.tell(
                 new AlertPublisherActor.SendAlert(
                         affectedArea,
-                        "Fire detected confidence=" + msg.confidence()
+                        "Fire detected confidence=" + msg.confidence(),
+                        msg.event().trace()   // pass trace forward
                 )
         );
 

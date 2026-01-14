@@ -1,33 +1,45 @@
 import asyncio
 import nats
 import os
+import json
+import time
 
-#function acts as receiver for alarms
+
+TRACE_LOG = "/app/data/traces.jsonl"
+
+# function acts as receiver for alarms
 async def alarm_radio(nats_url: str, area: str):
-    #establish NATS connection
     nc = await nats.connect(nats_url)
 
-    #name of channel where alarms are received
     subject = f"alerts.{area}"
     print(f"Alarm radio listening on {subject}")
 
-    #message handler
     async def msg_handler(msg):
-        text = msg.data.decode()
+        payload = json.loads(msg.data.decode())
+
+        text = payload["text"]
+        trace = payload["trace"]
+
+        # Close the trace
+        trace["timestamps"]["iot_alarm_received"] = time.monotonic_ns()
+
         print(f"\nALERT for {area}")
         print("Message:", text)
+        print("Trace ID:", trace["trace_id"])
         print("--------------------")
 
-    #listens to channel
+        # Persist trace for later analysis
+        with open(TRACE_LOG, "a") as f:
+            f.write(json.dumps(trace) + "\n")
+
     await nc.subscribe(subject, cb=msg_handler)
 
-    #endless loop to permanentely listen to the messages
     while True:
         await asyncio.sleep(1)
 
+
 if __name__ == "__main__":
-    #configure ENV variables
     area = os.environ.get("AREA", "areaA")
-    nats_url = os.environ.get("NATS_URL", "nats://nats:4222")
+    nats_url = os.environ.get("NATS_URL", "nats://98.95.255.36:4222")
 
     asyncio.run(alarm_radio(nats_url, area))
