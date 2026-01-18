@@ -66,8 +66,12 @@ public class FireAnalysisActor extends AbstractBehavior<FireAnalysisActor.Comman
 
         // Mark ML request start
         msg.event().trace().timestamps().put(
-                "ml_request_start",
+                "ml_request_start_mono",
                 System.nanoTime()
+        );
+        msg.event().trace().timestamps().put(
+                "ml_request_start",
+                System.currentTimeMillis() * 1_000_000L
         );
 
         CompletableFuture
@@ -83,14 +87,24 @@ public class FireAnalysisActor extends AbstractBehavior<FireAnalysisActor.Comman
 
                         // Mark ML request end
                         msg.event().trace().timestamps().put(
-                                "ml_request_end",
+                                "ml_request_end_mono",
                                 System.nanoTime()
+                        );
+
+                        msg.event().trace().timestamps().put(
+                                "ml_request_end",
+                                System.currentTimeMillis() * 1_000_000L
                         );
 
                         // Mark Cloud decision time
                         msg.event().trace().timestamps().put(
-                                "cloud_decision",
+                                "cloud_decision_mono",
                                 System.nanoTime()
+                        );
+
+                        msg.event().trace().timestamps().put(
+                                "cloud_decision",
+                                System.currentTimeMillis() * 1_000_000L
                         );
 
                         getContext().getSelf().tell(
@@ -113,8 +127,12 @@ public class FireAnalysisActor extends AbstractBehavior<FireAnalysisActor.Comman
 
         // Alarm publication timestamp
         msg.event().trace().timestamps().put(
-                "alarm_published",
+                "alarm_published_mono",
                 System.nanoTime()
+        );
+        msg.event().trace().timestamps().put(
+                "alarm_published",
+                System.currentTimeMillis() * 1_000_000L
         );
 
         alertPublisher.tell(

@@ -40,8 +40,12 @@ public class NatsIngestActor extends AbstractBehavior<Void> {
 
                     // Add Cloud receive timestamp
                     event.trace().timestamps().put(
-                            "cloud_received",
+                            "cloud_received_mono",
                             System.nanoTime()
+                    );
+                    event.trace().timestamps().put(
+                            "cloud_received",
+                            System.currentTimeMillis() * 1_000_000L
                     );
 
                     fireAnalysis.tell(new FireAnalysisActor.Analyze(event));

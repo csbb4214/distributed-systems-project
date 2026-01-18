@@ -32,7 +32,7 @@ async def camera_sender(nats_url: str, area: str, frames_dir: str, fps: int = 1)
             trace = {
                 "trace_id": uuid.uuid4().hex,
                 "timestamps": {
-                    "iot_capture": time.monotonic_ns()
+                    "iot_capture": time.time_ns()
                 }
             }
 

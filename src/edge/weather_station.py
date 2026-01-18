@@ -77,7 +77,8 @@ async def weather_station(region: str, areas: list[str], nats_url: str):
         trace = payload["trace"]
         frame_b64 = payload["frame_bytes_b64"]
 
-        trace["timestamps"]["edge_received"] = t_received
+        trace["timestamps"]["edge_received_mono"] = t_received
+        trace["timestamps"]["edge_received"] = time.time_ns()
 
         # Decode image
         raw_bytes = base64.b64decode(frame_b64)
@@ -91,7 +92,8 @@ async def weather_station(region: str, areas: list[str], nats_url: str):
         if conf_smoke < 0.014:
             conf_fire = detect_fire(frame_small)
 
-        trace["timestamps"]["edge_filtered"] = time.monotonic_ns()
+        trace["timestamps"]["edge_filtered_mono"] = time.monotonic_ns()
+        trace["timestamps"]["edge_filtered"] = time.time_ns()
 
         wind_speed, wind_direction = generate_wind()
 
@@ -116,7 +118,8 @@ async def weather_station(region: str, areas: list[str], nats_url: str):
             "frame_jpeg_b64": jpeg_b64
         }
 
-        trace["timestamps"]["edge_sent"] = time.monotonic_ns()
+        trace["timestamps"]["edge_sent_mono"] = time.monotonic_ns()
+        trace["timestamps"]["edge_sent"] = time.time_ns()
 
         await nc.publish(cloud_subject, json.dumps(event).encode())
 

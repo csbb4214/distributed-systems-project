@@ -21,7 +21,7 @@ async def alarm_radio(nats_url: str, area: str):
         trace = payload["trace"]
 
         # Close the trace
-        trace["timestamps"]["iot_alarm_received"] = time.monotonic_ns()
+        trace["timestamps"]["iot_alarm_received"] = time.time_ns()
 
         print(f"\nALERT for {area}")
         print("Message:", text)
