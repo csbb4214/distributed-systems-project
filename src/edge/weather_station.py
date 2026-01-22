@@ -65,9 +65,11 @@ async def weather_station(region: str, areas: list[str], nats_url: str):
     nc = await nats.connect(nats_url)
 
     cloud_subject = f"region.{region}.processed"
+    queue_group = os.environ.get("NATS_QUEUE", f"ws-{region}")
 
     print(f"[Station {region}] Subscribing to areas: {areas}")
     print(f"[Station {region}] Publishing to '{cloud_subject}'")
+    print(f"[Station {region}] Using queue group: {queue_group}")
 
     async def msg_handler(msg):
         t_received = time.monotonic_ns()
@@ -123,15 +125,14 @@ async def weather_station(region: str, areas: list[str], nats_url: str):
 
         await nc.publish(cloud_subject, json.dumps(event).encode())
 
-    # Subscribe individually to each area subject part of this region
     for area in areas:
         subject = f"area.{area}.frame"
-        print(f"[Station {region}] Subscribing to {subject}")
-        await nc.subscribe(subject, cb=msg_handler)
+        print(f"[Station {region}] Subscribing to {subject} (queue={queue_group})")
+        await nc.subscribe(subject, queue=queue_group, cb=msg_handler)
 
-    # Run indefinitely
     while True:
         await asyncio.sleep(1)
+
 
 
 if __name__ == "__main__":

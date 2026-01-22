@@ -159,7 +159,7 @@ async def main():
         # Camera Area 02
         asyncio.create_task(service_camera(
             area="area02",
-            frames_dir="./frames_cam01",
+            frames_dir="./frames_cam02",
             fps=0.5,
             window_x=cam2_x, # Pass coordinates
             window_y=cam2_y

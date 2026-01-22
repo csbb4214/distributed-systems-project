@@ -84,8 +84,8 @@ async def camera_sender(nats_url: str, area: str, frames_dir: str, fps: float = 
 
 
 if __name__ == "__main__":
-    area = os.environ.get("AREA", "areaA")
-    frames_dir = os.environ.get("FRAMES_DIR", "frames")
+    area = os.environ.get("AREA", "area00")
+    frames_dir = os.environ.get("FRAMES_DIR", "frames_cam01")
     fps = float(os.environ.get("FPS", "1"))
     nats_url = os.environ.get("NATS_URL", "nats://98.95.255.36:4222")
 
