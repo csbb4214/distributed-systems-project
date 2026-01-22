@@ -1,32 +1,26 @@
 services:
-  camera_areaa1:
+  # -----------------------
+  # Cameras (fire frames)
+  # -----------------------
+  camera_area01: &camera_template
     build: ./camera
     environment:
-      AREA: "areaA1"
-      FRAMES_DIR: "/app/frame_fire"
-      FPS: 1
+      AREA: "area01"
+      FRAMES_DIR: "/app/frames_cam01"
+      FPS: "0.5"
       NATS_URL: "nats://98.95.255.36:4222"
+    restart: unless-stopped
 
-  camera_areab1:
-    build: ./camera
-    environment:
-      AREA: "areaB1"
-      FRAMES_DIR: "/app/frames_cam02"
-      FPS: 1
-      NATS_URL: "nats://98.95.255.36:4222"
+  camera_area02: { <<: *camera_template, environment: { AREA: "area02", FRAMES_DIR: "/app/frames_cam01", FPS: "0.5", NATS_URL: "nats://98.95.255.36:4222" } }
 
-  alarm_areaa1:
+  # -----------------------
+  # Alarm radios (tracing)
+  # -----------------------
+  alarm_area01: &alarm_template
     build: ./alarm
     environment:
-      AREA: "areaA1"
+      AREA: "area01"
       NATS_URL: "nats://98.95.255.36:4222"
-    volumes:
-      - ./alarm_logs/areaa1:/app/data  # Mount to subdirectory
+    restart: unless-stopped
 
-  alarm_areab1:
-    build: ./alarm
-    environment:
-      AREA: "areaB1"
-      NATS_URL: "nats://98.95.255.36:4222"
-    volumes:
-      - ./alarm_logs/areab1:/app/data  # Mount to subdirectory
+  alarm_area02: { <<: *alarm_template, environment: { AREA: "area02", NATS_URL: "nats://98.95.255.36:4222" } }
